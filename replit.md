@@ -29,53 +29,93 @@ The application uses a custom design system with:
 
 **Component Structure**
 The frontend follows a component-based architecture with:
-- **Page Components**: Single-page application with home page and 404 fallback
+- **Page Components**: 
+  - `/` - Home page with all marketing sections
+  - `/login` - Admin login page
+  - `/admin` - Admin dashboard for user management (protected route)
+  - `*` - 404 fallback page
 - **Feature Components**: Modular sections (Header, Hero, AboutSection, PracticeAreas, Attorneys, Testimonials, etc.)
 - **UI Components**: Reusable primitives in `client/src/components/ui/`
 - **Hooks**: Custom React hooks for common functionality
+
+**Admin Interface**
+- **Login Page** (`/login`): Form-based authentication with username/password
+- **Admin Dashboard** (`/admin`): Complete user management interface
+  - User listing table with all user details
+  - Create new users with full form validation
+  - Edit existing users (name, email, username, password, admin status)
+  - Delete users (with protection against self-deletion)
+  - Logout functionality
 
 ### Backend Architecture
 
 **Technology Stack**
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js
+- **Authentication**: Passport.js with local strategy
 - **Development**: tsx for TypeScript execution
 - **Build**: esbuild for production bundling
 
 **Server Structure**
-The backend uses a minimal Express setup:
+The backend implements a full authentication and admin system:
 - **Development Mode**: Vite middleware integration for HMR and dev server
 - **Production Mode**: Serves static files from built client
-- **API Routes**: Prefixed with `/api` (currently minimal implementation)
+- **API Routes**: Prefixed with `/api`
+  - `/api/auth/*` - Authentication endpoints (login, logout, me)
+  - `/api/users/*` - User management (CRUD, admin-only)
 - **Logging**: Custom request/response logging middleware
+- **Configuration**: Environment-based config via `server/config.ts` that reads from `.env`
 
 **Storage Layer**
 The application implements a storage interface pattern:
-- **Interface**: `IStorage` defines CRUD operations
-- **Implementation**: `MemStorage` provides in-memory storage (suitable for development/demo)
+- **Interface**: `IStorage` defines CRUD operations for users
+- **Implementation**: `DbStorage` provides MySQL database storage
 - **Extensibility**: Designed to swap storage implementations without changing application code
 
 ### Data Storage
 
 **Database Configuration**
-- **ORM**: Drizzle ORM with PostgreSQL dialect
-- **Connection**: Neon Database serverless PostgreSQL (via `@neondatabase/serverless`)
+- **Database**: MySQL (configured via `.env` credentials)
+- **ORM**: Drizzle ORM with MySQL2 dialect
+- **Connection**: MySQL connection pool via `mysql2/promise`
 - **Schema Location**: `shared/schema.ts` for type-safe schema sharing between client/server
-- **Migrations**: Drizzle Kit configured with migrations in `./migrations` directory
+- **Configuration**: Environment variables loaded from `.env` via `server/config.ts`
 
 **Current Schema**
-- **Users Table**: Basic user model with id (UUID), username, password
+- **Users Table**: Complete user model with:
+  - `id` (auto-increment integer)
+  - `username` (unique, varchar 255)
+  - `password` (hashed with bcrypt, varchar 255)
+  - `full_name` (varchar 255)
+  - `email` (unique, varchar 255)
+  - `is_admin` (boolean, default false)
+  - `created_at` (timestamp, auto-generated)
 - **Validation**: Zod schemas generated from Drizzle schema for runtime validation
 
-**Design Decision**
-The database is currently configured but not actively used in the application flow. The `MemStorage` implementation serves as a temporary solution, with the architecture ready to integrate database queries when needed.
+**Security Features**
+- Passwords hashed using bcrypt (10 rounds)
+- Environment-based configuration (no hardcoded credentials)
+- MySQL credentials loaded from `.env` file
+- Session secret from environment variable
 
-### Session Management
+### Authentication & Session Management
 
-**Approach**
-- **Library**: `connect-pg-simple` is included for PostgreSQL-backed session storage
-- **Current State**: Session management is configured in dependencies but not yet implemented in routes
-- **Future Use**: Ready for authentication/authorization features
+**Implementation**
+- **Library**: Passport.js with local strategy
+- **Session Storage**: Express-session with in-memory store
+- **Password Security**: bcrypt hashing (10 rounds)
+- **Session Cookie**: 
+  - Max age: 7 days
+  - HTTP-only flag enabled
+  - Secure flag in production
+- **Protected Routes**: Middleware checks authentication and admin status
+
+**User Roles**
+- **Admin**: Full access to user management (CRUD operations)
+- **Regular User**: Limited access (future feature expansion)
+
+**Initial Setup**
+- Default admin user created: `admin@barristar.com` / `admin` / `admin123`
 
 ## External Dependencies
 

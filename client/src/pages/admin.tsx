@@ -53,10 +53,11 @@ export default function Admin() {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: typeof formData) => {
-      const response = await apiRequest("/api/users", {
+      const response = await fetch("/api/users", {
         method: "POST",
         body: JSON.stringify(userData),
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
@@ -83,10 +84,11 @@ export default function Admin() {
 
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<typeof formData> }) => {
-      const response = await apiRequest(`/api/users/${id}`, {
+      const response = await fetch(`/api/users/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
@@ -114,8 +116,9 @@ export default function Admin() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest(`/api/users/${id}`, {
+      const response = await fetch(`/api/users/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
@@ -140,8 +143,9 @@ export default function Admin() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("/api/auth/logout", {
+      const response = await fetch("/api/auth/logout", {
         method: "POST",
+        credentials: "include",
       });
       if (!response.ok) {
         throw new Error("Erro ao fazer logout");

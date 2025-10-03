@@ -1,13 +1,14 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "@shared/schema";
+import { config } from "./config";
 
 const connection = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  port: parseInt(process.env.MYSQL_PORT || "3306"),
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
+  host: config.mysql.host,
+  port: config.mysql.port,
+  user: config.mysql.user,
+  password: config.mysql.password,
+  database: config.mysql.database,
 });
 
 export const db = drizzle(connection, { schema, mode: "default" });

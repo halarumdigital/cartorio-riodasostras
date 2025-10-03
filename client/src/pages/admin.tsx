@@ -240,224 +240,242 @@ export default function Admin() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-brand-blue">
-              Gerenciar Usuários
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Total de usuários: {usersData?.users.length || 0}
-            </p>
+      <div className="flex">
+        <aside className="w-64 bg-white min-h-[calc(100vh-73px)] border-r border-gray-200">
+          <nav className="p-4">
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center px-4 py-3 text-brand-blue bg-brand-light-gray rounded-md font-medium"
+                  data-testid="menu-usuarios"
+                >
+                  Usuários
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+
+        <main className="flex-1 px-6 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-serif font-bold text-brand-blue">
+                Gerenciar Usuários
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Total de usuários: {usersData?.users.length || 0}
+              </p>
+            </div>
+
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setEditingUser(null);
+                resetForm();
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-brand-blue hover:bg-opacity-90"
+                  data-testid="button-new-user"
+                >
+                  + Novo Usuário
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingUser ? "Editar Usuário" : "Novo Usuário"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingUser 
+                      ? "Atualize as informações do usuário abaixo." 
+                      : "Preencha os dados para criar um novo usuário."}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmit} className="space-y-4" data-testid="form-user">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome Completo
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                      required
+                      data-testid="input-fullname"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                      required
+                      data-testid="input-email-user"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome de Usuário
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                      required
+                      data-testid="input-username-user"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Senha {editingUser && "(deixe em branco para não alterar)"}
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                      required={!editingUser}
+                      data-testid="input-password-user"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isAdmin"
+                      checked={formData.isAdmin}
+                      onChange={(e) => setFormData({ ...formData, isAdmin: e.target.checked })}
+                      className="h-4 w-4 text-brand-blue focus:ring-brand-gold border-gray-300 rounded"
+                      data-testid="checkbox-is-admin"
+                    />
+                    <label htmlFor="isAdmin" className="ml-2 block text-sm text-gray-700">
+                      Administrador
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsDialogOpen(false);
+                        setEditingUser(null);
+                        resetForm();
+                      }}
+                      data-testid="button-cancel"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="bg-brand-blue hover:bg-opacity-90"
+                      data-testid="button-save-user"
+                    >
+                      {editingUser ? "Atualizar" : "Criar"}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setEditingUser(null);
-              resetForm();
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button 
-                className="bg-brand-blue hover:bg-opacity-90"
-                data-testid="button-new-user"
-              >
-                + Novo Usuário
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingUser ? "Editar Usuário" : "Novo Usuário"}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingUser 
-                    ? "Atualize as informações do usuário abaixo." 
-                    : "Preencha os dados para criar um novo usuário."}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <form onSubmit={handleSubmit} className="space-y-4" data-testid="form-user">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nome Completo
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
-                    required
-                    data-testid="input-fullname"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
-                    required
-                    data-testid="input-email-user"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nome de Usuário
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
-                    required
-                    data-testid="input-username-user"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Senha {editingUser && "(deixe em branco para não alterar)"}
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
-                    required={!editingUser}
-                    data-testid="input-password-user"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isAdmin"
-                    checked={formData.isAdmin}
-                    onChange={(e) => setFormData({ ...formData, isAdmin: e.target.checked })}
-                    className="h-4 w-4 text-brand-blue focus:ring-brand-gold border-gray-300 rounded"
-                    data-testid="checkbox-is-admin"
-                  />
-                  <label htmlFor="isAdmin" className="ml-2 block text-sm text-gray-700">
-                    Administrador
-                  </label>
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsDialogOpen(false);
-                      setEditingUser(null);
-                      resetForm();
-                    }}
-                    data-testid="button-cancel"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-brand-blue hover:bg-opacity-90"
-                    data-testid="button-save-user"
-                  >
-                    {editingUser ? "Atualizar" : "Criar"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="bg-white rounded-lg shadow">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Usuário</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Data de Criação</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+          <div className="bg-white rounded-lg shadow">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Carregando usuários...
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Usuário</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Data de Criação</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              ) : usersData?.users.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Nenhum usuário encontrado
-                  </TableCell>
-                </TableRow>
-              ) : (
-                usersData?.users.map((user) => (
-                  <TableRow key={user.id} data-testid={`row-user-${user.id}`}>
-                    <TableCell>{user.id}</TableCell>
-                    <TableCell className="font-medium">{user.fullName}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.username}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.isAdmin
-                            ? "bg-brand-gold text-white"
-                            : "bg-gray-200 text-gray-800"
-                        }`}
-                      >
-                        {user.isAdmin ? "Admin" : "Usuário"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(user.createdAt).toLocaleDateString("pt-BR")}
-                    </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                        data-testid={`button-edit-${user.id}`}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(user)}
-                        disabled={user.id === currentUser?.user.id}
-                        data-testid={`button-delete-${user.id}`}
-                      >
-                        Deletar
-                      </Button>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      Carregando usuários...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : usersData?.users.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      Nenhum usuário encontrado
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  usersData?.users.map((user) => (
+                    <TableRow key={user.id} data-testid={`row-user-${user.id}`}>
+                      <TableCell>{user.id}</TableCell>
+                      <TableCell className="font-medium">{user.fullName}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.username}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.isAdmin
+                              ? "bg-brand-gold text-white"
+                              : "bg-gray-200 text-gray-800"
+                          }`}
+                        >
+                          {user.isAdmin ? "Admin" : "Usuário"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(user.createdAt).toLocaleDateString("pt-BR")}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(user)}
+                          data-testid={`button-edit-${user.id}`}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(user)}
+                          disabled={user.id === currentUser?.user.id}
+                          data-testid={`button-delete-${user.id}`}
+                        >
+                          Deletar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-        <div className="mt-8 text-center">
-          <a
-            href="/"
-            className="text-brand-blue hover:text-brand-gold transition-colors"
-            data-testid="link-back-to-site"
-          >
-            ← Voltar para o site
-          </a>
-        </div>
-      </main>
+          <div className="mt-8 text-center">
+            <a
+              href="/"
+              className="text-brand-blue hover:text-brand-gold transition-colors"
+              data-testid="link-back-to-site"
+            >
+              ← Voltar para o site
+            </a>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -21,7 +21,8 @@
       "Bash(del create-links-table.js)",
       "Bash(del migrationsrun-fix-charset.js)",
       "Bash(del migrationsrun-add-anexos.js)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

@@ -190,3 +190,11 @@
     margin-left: 0.25rem;
   }
 }
+
+/* Mobile-specific styles (only applies to screens < 768px) */
+@media (max-width: 767px) {
+  /* Ensure mobile design from HTML template is applied */
+  .mobile-override {
+    /* This class will be used to apply mobile-specific styles */
+  }
+}

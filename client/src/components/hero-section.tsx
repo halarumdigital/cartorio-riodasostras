@@ -42,7 +42,7 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="relative h-[800px] overflow-hidden" id="home">
+    <section className="relative max-lg:h-80 h-[800px] overflow-hidden bg-cover bg-center" id="home">
       {activeBanners.map((banner, index) => (
         <div
           key={banner.id}
@@ -64,15 +64,17 @@ export default function HeroSection() {
         </div>
       ))}
 
+      <div className="absolute inset-0 max-lg:bg-black max-lg:bg-opacity-30"></div>
+
       {/* Indicadores */}
       {activeBanners.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+        <div className="absolute max-lg:bottom-4 bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
           {activeBanners.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-3 h-3 rounded-full transition-all ${
-                currentSlide === index ? 'bg-white w-8' : 'bg-white/50'
+                currentSlide === index ? 'bg-white max-lg:w-3 w-8' : 'bg-white/50'
               }`}
               aria-label={`Ir para slide ${index + 1}`}
             />

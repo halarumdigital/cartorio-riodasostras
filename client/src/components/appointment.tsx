@@ -124,21 +124,21 @@ export default function Appointment() {
   };
 
   return (
-    <section className="appointment-bg text-white py-24" id="contact">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <section className="appointment-bg text-white max-lg:py-16 py-24" id="contact">
+      <div className="container mx-auto max-lg:px-4 px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 max-lg:gap-8 gap-12 items-center">
           <div>
-            <div className="space-y-4">
+            <div className="max-lg:space-y-3 space-y-4">
               {contacts?.phone && (
-                <div className="flex items-start space-x-4" data-testid="contact-phone">
-                  <span className="iconify text-brand-gold mt-1" data-icon="mdi:whatsapp" data-width="24"></span>
+                <div className="flex items-start max-lg:space-x-3 space-x-4" data-testid="contact-phone">
+                  <span className="iconify text-brand-gold mt-1 max-lg:text-xl" data-icon="mdi:whatsapp" data-width="24"></span>
                   <div>
-                    <h4 className="font-bold mb-1">WhatsApp</h4>
+                    <h4 className="font-bold max-lg:text-sm mb-1">WhatsApp</h4>
                     <a
                       href={`https://wa.me/55${contacts.phone.replace(/\D/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-300 hover:text-brand-gold transition-colors"
+                      className="max-lg:text-sm text-gray-300 hover:text-brand-gold transition-colors"
                     >
                       {contacts.phone}
                     </a>
@@ -147,16 +147,16 @@ export default function Appointment() {
               )}
 
               {contacts?.email && (
-                <div className="flex items-start space-x-4" data-testid="contact-email">
-                  <span className="iconify text-brand-gold mt-1" data-icon="mdi:email" data-width="24"></span>
+                <div className="flex items-start max-lg:space-x-3 space-x-4" data-testid="contact-email">
+                  <span className="iconify text-brand-gold mt-1 max-lg:text-xl" data-icon="mdi:email" data-width="24"></span>
                   <div>
-                    <h4 className="font-bold mb-1">Email</h4>
+                    <h4 className="font-bold max-lg:text-sm mb-1">Email</h4>
                     <div className="flex flex-col space-y-1">
                       {contacts.email.replace(/[\[\]"]/g, '').split(',').map((email, index) => (
                         <a
                           key={index}
                           href={`mailto:${email.trim()}`}
-                          className="text-gray-300 hover:text-brand-gold transition-colors"
+                          className="max-lg:text-sm text-gray-300 hover:text-brand-gold transition-colors"
                         >
                           {email.trim()}
                         </a>
@@ -167,37 +167,37 @@ export default function Appointment() {
               )}
 
               {contacts?.address && (
-                <div className="flex items-start space-x-4" data-testid="contact-address">
-                  <span className="iconify text-brand-gold mt-1" data-icon="mdi:map-marker" data-width="24"></span>
+                <div className="flex items-start max-lg:space-x-3 space-x-4" data-testid="contact-address">
+                  <span className="iconify text-brand-gold mt-1 max-lg:text-xl" data-icon="mdi:map-marker" data-width="24"></span>
                   <div>
-                    <h4 className="font-bold mb-1">Onde estamos</h4>
-                    <p className="text-gray-300">{contacts.address}</p>
+                    <h4 className="font-bold max-lg:text-sm mb-1">Onde estamos</h4>
+                    <p className="max-lg:text-sm text-gray-300">{contacts.address}</p>
                   </div>
                 </div>
               )}
 
               {contacts?.businessHours && (
-                <div className="flex items-start space-x-4" data-testid="contact-hours">
-                  <span className="iconify text-brand-gold mt-1" data-icon="mdi:clock-outline" data-width="24"></span>
+                <div className="flex items-start max-lg:space-x-3 space-x-4" data-testid="contact-hours">
+                  <span className="iconify text-brand-gold mt-1 max-lg:text-xl" data-icon="mdi:clock-outline" data-width="24"></span>
                   <div>
-                    <h4 className="font-bold mb-1">Horário de Funcionamento</h4>
-                    <p className="text-gray-300">{contacts.businessHours}</p>
+                    <h4 className="font-bold max-lg:text-sm mb-1">Horário de Funcionamento</h4>
+                    <p className="max-lg:text-sm text-gray-300">{contacts.businessHours}</p>
                   </div>
                 </div>
               )}
             </div>
           </div>
-          
-          <div className="bg-white p-8 rounded-lg">
-            <form className="space-y-4" onSubmit={handleSubmit} data-testid="form-appointment">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div className="bg-white max-lg:p-6 p-8 max-lg:rounded-md rounded-lg">
+            <form className="max-lg:space-y-3 space-y-4" onSubmit={handleSubmit} data-testid="form-appointment">
+              <div className="grid grid-cols-1 md:grid-cols-2 max-lg:gap-3 gap-4">
                 <input
                   type="text"
                   name="nome"
                   placeholder="Seu Nome"
                   value={formData.nome}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
+                  className="w-full max-lg:px-3 max-lg:py-2 max-lg:text-sm px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
                   data-testid="input-name"
                   required
                 />
@@ -207,7 +207,7 @@ export default function Appointment() {
                   placeholder="Seu Email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
+                  className="w-full max-lg:px-3 max-lg:py-2 max-lg:text-sm px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
                   data-testid="input-email"
                   required
                 />
@@ -219,7 +219,7 @@ export default function Appointment() {
                 placeholder="Seu Telefone"
                 value={formData.telefone}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
+                className="w-full max-lg:px-3 max-lg:py-2 max-lg:text-sm px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
                 data-testid="input-phone"
                 required
               />
@@ -230,13 +230,13 @@ export default function Appointment() {
                 rows={4}
                 value={formData.mensagem}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
+                className="w-full max-lg:px-3 max-lg:py-2 max-lg:text-sm px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
                 data-testid="textarea-message"
                 required
               ></textarea>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block max-lg:text-xs text-sm font-medium text-gray-700 max-lg:mb-1 mb-2">
                   Anexar arquivos (opcional)
                 </label>
                 <input
@@ -244,21 +244,21 @@ export default function Appointment() {
                   multiple
                   accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
                   onChange={handleFileChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
+                  className="w-full max-lg:px-3 max-lg:py-2 max-lg:text-sm px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="max-lg:text-[10px] text-xs text-gray-500 mt-1">
                   Máximo 5 arquivos de até 5MB cada (JPG, PNG, GIF ou PDF)
                 </p>
 
                 {selectedFiles.length > 0 && (
-                  <div className="mt-3 space-y-2">
+                  <div className="max-lg:mt-2 mt-3 max-lg:space-y-1 space-y-2">
                     {selectedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded">
-                        <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                      <div key={index} className="flex items-center justify-between bg-gray-50 max-lg:px-2 max-lg:py-1 px-3 py-2 rounded">
+                        <span className="max-lg:text-xs text-sm text-gray-700 truncate">{file.name}</span>
                         <button
                           type="button"
                           onClick={() => removeFile(index)}
-                          className="text-red-500 hover:text-red-700 ml-2"
+                          className="text-red-500 hover:text-red-700 max-lg:ml-1 ml-2 max-lg:text-sm"
                         >
                           ✕
                         </button>
@@ -270,7 +270,7 @@ export default function Appointment() {
 
               <button
                 type="submit"
-                className="w-full bg-brand-blue text-white px-8 py-3 font-semibold hover:bg-opacity-90 transition-colors"
+                className="w-full bg-brand-blue text-white max-lg:px-6 max-lg:py-2 max-lg:text-sm px-8 py-3 font-semibold hover:bg-opacity-90 transition-colors"
                 data-testid="button-submit-request"
                 disabled={sendMessageMutation.isPending}
               >

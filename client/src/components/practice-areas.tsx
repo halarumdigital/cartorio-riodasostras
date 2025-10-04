@@ -50,22 +50,19 @@ export default function PracticeAreas() {
   };
 
   return (
-    <section className="py-24 bg-brand-light-gray" id="servicos">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <p className="text-brand-blue font-semibold" data-testid="text-practice-areas-subtitle">Serviços</p>
-          <div className="w-16 h-0.5 bg-brand-blue my-4 mx-auto"></div>
-          <h2 className="font-serif text-4xl text-brand-blue font-bold" data-testid="text-practice-areas-title">
-            Nossos Serviços
-          </h2>
-        </div>
+    <section className="max-lg:py-16 py-24 max-lg:bg-white bg-brand-light-gray" id="servicos">
+      <div className="container mx-auto px-6 max-lg:text-center">
+        <p className="max-lg:text-sm max-lg:text-gray-500 max-lg:mb-2 text-brand-blue font-semibold" data-testid="text-practice-areas-subtitle">Serviços</p>
+        <h2 className="font-serif max-lg:text-3xl text-4xl max-lg:font-bold text-brand-blue font-bold max-lg:mb-12 mb-16" data-testid="text-practice-areas-title">
+          Nossos Serviços
+        </h2>
 
         <div className="relative">
           {services.length > itemsPerPage && (
             <>
               <button
                 onClick={prevPage}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-brand-blue text-white p-3 rounded-full hover:bg-opacity-90 transition-colors z-10 shadow-lg"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-brand-blue text-white p-3 rounded-full hover:bg-opacity-90 transition-colors z-10 shadow-lg max-lg:hidden"
                 aria-label="Página anterior"
               >
                 <span className="iconify" data-icon="mdi:chevron-left" data-width="24"></span>
@@ -73,7 +70,7 @@ export default function PracticeAreas() {
 
               <button
                 onClick={nextPage}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-brand-blue text-white p-3 rounded-full hover:bg-opacity-90 transition-colors z-10 shadow-lg"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-brand-blue text-white p-3 rounded-full hover:bg-opacity-90 transition-colors z-10 shadow-lg max-lg:hidden"
                 aria-label="Próxima página"
               >
                 <span className="iconify" data-icon="mdi:chevron-right" data-width="24"></span>
@@ -81,28 +78,28 @@ export default function PracticeAreas() {
             </>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {currentServices.map((service, index) => {
               const globalIndex = startIndex + index;
               return (
                 <div
                   key={service.id}
                   onClick={() => setSelectedService(service)}
-                  className="bg-white p-8 hover:shadow-xl transition-all group cursor-pointer"
+                  className="bg-white p-8 max-lg:rounded-lg max-lg:shadow-md max-lg:text-left hover:shadow-xl transition-all group cursor-pointer"
                   data-testid={`service-${service.id}`}
                 >
-                  <span className="iconify text-brand-blue group-hover:scale-110 transition-transform inline-block" data-icon={getServiceIcon(globalIndex)} data-width="60"></span>
-                  <h3 className="font-serif text-2xl text-brand-blue font-bold mt-6 mb-4">
+                  <span className="iconify max-lg:text-4xl text-brand-blue max-lg:mb-4 group-hover:scale-110 transition-transform inline-block" data-icon={getServiceIcon(globalIndex)} data-width="60"></span>
+                  <h3 className="font-serif max-lg:font-bold max-lg:text-lg text-2xl text-brand-blue font-bold max-lg:mb-2 mt-6 mb-4">
                     {service.name}
                   </h3>
                   {service.description && (
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-gray-600 max-lg:text-sm mb-4 line-clamp-3">
                       {service.description}
                     </p>
                   )}
-                  <span className="text-brand-blue font-semibold hover:underline inline-flex items-center">
+                  <span className="max-lg:text-sm text-brand-blue font-semibold max-lg:font-bold hover:underline inline-flex items-center">
                     Ver mais
-                    <span className="iconify ml-1" data-icon="mdi:arrow-right" data-width="20"></span>
+                    <span className="iconify ml-1 max-lg:inline-block" data-icon="mdi:arrow-right" data-width="20"></span>
                   </span>
                 </div>
               );

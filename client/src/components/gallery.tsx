@@ -74,22 +74,22 @@ export default function Gallery() {
 
   return (
     <>
-      <section className="py-24 bg-gray-50" id="gallery">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-brand-gold font-semibold" data-testid="text-gallery-subtitle">Galeria</p>
-            <div className="w-16 h-0.5 bg-brand-gold my-4 mx-auto"></div>
-            <h2 className="font-serif text-4xl text-brand-blue font-bold" data-testid="text-gallery-title">
+      <section className="max-lg:py-16 py-24 max-lg:bg-white bg-gray-50" id="gallery">
+        <div className="container mx-auto max-lg:px-4 px-6">
+          <div className="max-lg:text-center text-center max-lg:mb-8 mb-16">
+            <p className="max-lg:text-sm max-lg:text-gray-500 max-lg:mb-2 text-brand-gold font-semibold" data-testid="text-gallery-subtitle">Galeria</p>
+            <div className="w-16 h-0.5 bg-brand-gold my-4 mx-auto max-lg:hidden"></div>
+            <h2 className="font-serif max-lg:text-3xl max-lg:font-bold text-4xl text-brand-blue font-bold" data-testid="text-gallery-title">
               Nossa Galeria
             </h2>
           </div>
 
           <div className="relative">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 max-lg:gap-3 gap-4">
               {displayedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="aspect-square overflow-hidden cursor-pointer group relative"
+                  className="aspect-square overflow-hidden cursor-pointer group relative max-lg:rounded-md"
                   onClick={() => openModal(item)}
                   data-testid={`gallery-item-${item.id}`}
                 >
@@ -107,8 +107,8 @@ export default function Gallery() {
                         className="w-full h-full object-cover opacity-70 group-hover:scale-110 transition-transform duration-500"
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
-                          <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <div className="max-lg:w-12 max-lg:h-12 w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                          <svg className="max-lg:w-6 max-lg:h-6 w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M8 5v14l11-7z"/>
                           </svg>
                         </div>
@@ -121,11 +121,11 @@ export default function Gallery() {
 
             {/* Navigation Arrows */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-4 mt-8">
+              <div className="flex justify-center gap-4 max-lg:mt-6 mt-8">
                 <button
                   onClick={prevPage}
                   disabled={currentPage === 0}
-                  className={`p-2 rounded-full ${
+                  className={`max-lg:p-1.5 p-2 rounded-full max-lg:hidden ${
                     currentPage === 0
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-brand-gold text-white hover:bg-brand-blue transition-colors'
@@ -149,7 +149,7 @@ export default function Gallery() {
                 <button
                   onClick={nextPage}
                   disabled={currentPage === totalPages - 1}
-                  className={`p-2 rounded-full ${
+                  className={`max-lg:p-1.5 p-2 rounded-full max-lg:hidden ${
                     currentPage === totalPages - 1
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-brand-gold text-white hover:bg-brand-blue transition-colors'

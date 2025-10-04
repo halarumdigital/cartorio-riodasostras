@@ -69,27 +69,27 @@ export default function NewsSection() {
 
   return (
     <>
-      <section className="py-24 bg-white" id="news">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-brand-gold font-semibold" data-testid="text-news-subtitle">Notícias</p>
-            <div className="w-16 h-0.5 bg-brand-gold my-4 mx-auto"></div>
-            <h2 className="font-serif text-4xl text-brand-blue font-bold" data-testid="text-news-title">
+      <section className="max-lg:py-16 py-24 bg-white" id="news">
+        <div className="container mx-auto max-lg:px-4 px-6">
+          <div className="max-lg:text-center text-center max-lg:mb-8 mb-16">
+            <p className="max-lg:text-sm max-lg:text-gray-500 max-lg:mb-2 text-brand-gold font-semibold" data-testid="text-news-subtitle">Notícias</p>
+            <div className="w-16 h-0.5 bg-brand-gold my-4 mx-auto max-lg:hidden"></div>
+            <h2 className="font-serif max-lg:text-3xl max-lg:font-bold text-4xl text-brand-blue font-bold" data-testid="text-news-title">
               Últimas Notícias
             </h2>
           </div>
 
           <div className="relative">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-lg:gap-4 gap-6">
               {displayedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white shadow-lg rounded-lg overflow-hidden cursor-pointer group hover:shadow-xl transition-shadow"
+                  className="bg-white shadow-lg max-lg:rounded-md rounded-lg overflow-hidden cursor-pointer group hover:shadow-xl transition-shadow"
                   onClick={() => openModal(item)}
                   data-testid={`news-item-${item.id}`}
                 >
                   {item.imageUrl && (
-                    <div className="h-48 overflow-hidden">
+                    <div className="max-lg:h-40 h-48 overflow-hidden">
                       <img
                         src={item.imageUrl}
                         alt={item.title}
@@ -97,12 +97,12 @@ export default function NewsSection() {
                       />
                     </div>
                   )}
-                  <div className="p-6">
-                    <h3 className="font-bold text-xl text-brand-blue mb-3 line-clamp-2">
+                  <div className="max-lg:p-4 p-6">
+                    <h3 className="font-bold max-lg:text-lg text-xl text-brand-blue max-lg:mb-2 mb-3 line-clamp-2">
                       {item.title}
                     </h3>
                     <div
-                      className="text-gray-600 text-sm line-clamp-3"
+                      className="text-gray-600 max-lg:text-xs text-sm line-clamp-3"
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
                   </div>
@@ -112,11 +112,11 @@ export default function NewsSection() {
 
             {/* Navigation Arrows */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-4 mt-8">
+              <div className="flex justify-center gap-4 max-lg:mt-6 mt-8">
                 <button
                   onClick={prevPage}
                   disabled={currentPage === 0}
-                  className={`p-2 rounded-full ${
+                  className={`max-lg:p-1.5 p-2 rounded-full max-lg:hidden ${
                     currentPage === 0
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-brand-gold text-white hover:bg-brand-blue transition-colors'
@@ -140,7 +140,7 @@ export default function NewsSection() {
                 <button
                   onClick={nextPage}
                   disabled={currentPage === totalPages - 1}
-                  className={`p-2 rounded-full ${
+                  className={`max-lg:p-1.5 p-2 rounded-full max-lg:hidden ${
                     currentPage === totalPages - 1
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-brand-gold text-white hover:bg-brand-blue transition-colors'

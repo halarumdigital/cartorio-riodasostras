@@ -7,6 +7,9 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Trust proxy - importante para cookies funcionarem atrás de proxy reverso
+app.set('trust proxy', 1);
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
@@ -27,7 +30,8 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false, // Permite HTTP e HTTPS
+      sameSite: 'lax',
     },
   })
 );

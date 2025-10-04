@@ -17,23 +17,23 @@ export default function SoliciteEscritura() {
 
     // Vendedores
     nomeVendedores: "",
-    documentosVendedores: null as File | null,
+    documentosVendedores: [] as File[],
 
     // Pessoas Físicas - Vendedores
     pessoasFisicasVendedores: "",
-    documentosPessoasFisicasVendedores: null as File | null,
+    documentosPessoasFisicasVendedores: [] as File[],
 
     // Compradores
     nomeCompradores: "",
-    documentosCompradores: null as File | null,
+    documentosCompradores: [] as File[],
 
     // Pessoas Físicas - Compradores
     pessoasFisicasCompradores: "",
-    documentosPessoasFisicasCompradores: null as File | null,
+    documentosPessoasFisicasCompradores: [] as File[],
 
     // Objeto
     descricaoImoveis: "",
-    documentosImoveis: null as File | null,
+    documentosImoveis: [] as File[],
 
     // Preço e Forma de Pagamento
     precoFormaPagamento: "",
@@ -48,6 +48,9 @@ export default function SoliciteEscritura() {
     declaracaoAdicional: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -56,10 +59,40 @@ export default function SoliciteEscritura() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, [fieldName]: file }));
+    const files = Array.from(e.target.files || []);
+
+    // Validar quantidade de arquivos
+    if (files.length > 5) {
+      toast({
+        title: "Erro",
+        description: "Máximo de 5 arquivos permitidos por campo",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Validar tipo e tamanho dos arquivos
+    for (const file of files) {
+      if (file.type !== "application/pdf") {
+        toast({
+          title: "Erro",
+          description: "Apenas arquivos PDF são permitidos",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        toast({
+          title: "Erro",
+          description: `O arquivo ${file.name} excede o tamanho máximo de 5MB`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    setFormData((prev) => ({ ...prev, [fieldName]: files }));
   };
 
   const handleCheckboxChange = (value: string) => {
@@ -73,9 +106,15 @@ export default function SoliciteEscritura() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
 
     try {
       const formDataToSend = new FormData();
+
+      // Adicionar tipo e nome da solicitação
+      formDataToSend.append("tipoSolicitacao", "solicite-sua-escritura");
+      formDataToSend.append("nomeSolicitacao", "Solicite sua Escritura");
 
       // Adicionar todos os campos de texto
       Object.entries(formData).forEach(([key, value]) => {
@@ -87,22 +126,26 @@ export default function SoliciteEscritura() {
       // Adicionar especificações como JSON
       formDataToSend.append("especificacoes", JSON.stringify(formData.especificacoes));
 
-      // Adicionar arquivos
-      if (formData.documentosVendedores) {
-        formDataToSend.append("documentosVendedores", formData.documentosVendedores);
-      }
-      if (formData.documentosPessoasFisicasVendedores) {
-        formDataToSend.append("documentosPessoasFisicasVendedores", formData.documentosPessoasFisicasVendedores);
-      }
-      if (formData.documentosCompradores) {
-        formDataToSend.append("documentosCompradores", formData.documentosCompradores);
-      }
-      if (formData.documentosPessoasFisicasCompradores) {
-        formDataToSend.append("documentosPessoasFisicasCompradores", formData.documentosPessoasFisicasCompradores);
-      }
-      if (formData.documentosImoveis) {
-        formDataToSend.append("documentosImoveis", formData.documentosImoveis);
-      }
+      // Adicionar arquivos (múltiplos)
+      formData.documentosVendedores.forEach((file) => {
+        formDataToSend.append("documentosVendedores", file);
+      });
+
+      formData.documentosPessoasFisicasVendedores.forEach((file) => {
+        formDataToSend.append("documentosPessoasFisicasVendedores", file);
+      });
+
+      formData.documentosCompradores.forEach((file) => {
+        formDataToSend.append("documentosCompradores", file);
+      });
+
+      formData.documentosPessoasFisicasCompradores.forEach((file) => {
+        formDataToSend.append("documentosPessoasFisicasCompradores", file);
+      });
+
+      formData.documentosImoveis.forEach((file) => {
+        formDataToSend.append("documentosImoveis", file);
+      });
 
       const response = await fetch("/api/solicitacoes", {
         method: "POST",
@@ -112,7 +155,7 @@ export default function SoliciteEscritura() {
       if (response.ok) {
         toast({
           title: "Sucesso!",
-          description: "Solicitação enviada com sucesso!",
+          description: "Solicitação enviada com sucesso, aguarde nosso contato.",
         });
 
         // Resetar formulário
@@ -125,29 +168,33 @@ export default function SoliciteEscritura() {
           telefone: "",
           email: "",
           nomeVendedores: "",
-          documentosVendedores: null,
+          documentosVendedores: [],
           pessoasFisicasVendedores: "",
-          documentosPessoasFisicasVendedores: null,
+          documentosPessoasFisicasVendedores: [],
           nomeCompradores: "",
-          documentosCompradores: null,
+          documentosCompradores: [],
           pessoasFisicasCompradores: "",
-          documentosPessoasFisicasCompradores: null,
+          documentosPessoasFisicasCompradores: [],
           descricaoImoveis: "",
-          documentosImoveis: null,
+          documentosImoveis: [],
           precoFormaPagamento: "",
           especificacoes: [],
           outrosAcordos: "",
           declaracaoAdicional: "",
         });
       } else {
-        throw new Error("Erro ao enviar solicitação");
+        const data = await response.json();
+        throw new Error(data.message || "Erro ao enviar solicitação");
       }
-    } catch (error) {
+    } catch (error: any) {
+      setErrorMessage(error.message || "Erro ao enviar solicitação. Tente novamente.");
       toast({
         title: "Erro",
-        description: "Erro ao enviar solicitação. Tente novamente.",
+        description: error.message || "Erro ao enviar solicitação. Tente novamente.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -343,10 +390,12 @@ export default function SoliciteEscritura() {
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,image/*"
+                    accept=".pdf"
+                    multiple
                     onChange={(e) => handleFileChange(e, "documentosVendedores")}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Máximo 5 arquivos PDF de até 5MB cada</p>
                   <button
                     type="button"
                     className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
@@ -386,10 +435,12 @@ export default function SoliciteEscritura() {
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,image/*"
+                    accept=".pdf"
+                    multiple
                     onChange={(e) => handleFileChange(e, "documentosPessoasFisicasVendedores")}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Máximo 5 arquivos PDF de até 5MB cada</p>
                   <button
                     type="button"
                     className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
@@ -428,10 +479,12 @@ export default function SoliciteEscritura() {
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,image/*"
+                    accept=".pdf"
+                    multiple
                     onChange={(e) => handleFileChange(e, "documentosCompradores")}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Máximo 5 arquivos PDF de até 5MB cada</p>
                   <button
                     type="button"
                     className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
@@ -471,10 +524,12 @@ export default function SoliciteEscritura() {
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,image/*"
+                    accept=".pdf"
+                    multiple
                     onChange={(e) => handleFileChange(e, "documentosPessoasFisicasCompradores")}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Máximo 5 arquivos PDF de até 5MB cada</p>
                   <button
                     type="button"
                     className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
@@ -513,10 +568,12 @@ export default function SoliciteEscritura() {
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,image/*"
+                    accept=".pdf"
+                    multiple
                     onChange={(e) => handleFileChange(e, "documentosImoveis")}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Máximo 5 arquivos PDF de até 5MB cada</p>
                   <button
                     type="button"
                     className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"

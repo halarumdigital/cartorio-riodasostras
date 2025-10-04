@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import passport from "./auth";
 import bcrypt from "bcryptjs";
-import { insertUserSchema, type User, insertSiteSettingsSchema, insertContactsSchema, insertServiceSchema, type Service, insertBannerSchema, type Banner, insertGallerySchema, type GalleryItem, insertPageSchema, type Page, insertContactMessageSchema, type ContactMessage, insertGoogleSettingsSchema, insertScriptsSchema } from "@shared/schema";
+import { insertUserSchema, type User, insertSiteSettingsSchema, insertContactsSchema, insertServiceSchema, type Service, insertBannerSchema, type Banner, insertGallerySchema, type GalleryItem, insertPageSchema, type Page, insertContactMessageSchema, type ContactMessage, insertGoogleSettingsSchema, insertScriptsSchema, insertSocialMediaSchema, insertNewsSchema, type News, insertLinkSchema, type Link, insertInformacaoSchema, type Informacao } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -37,18 +37,33 @@ const upload = multer({
   },
 });
 
-// Upload for documents (PDF and images)
+// Upload for documents (PDF only)
 const uploadDocuments = multer({
   storage: uploadStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|svg|pdf/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = file.mimetype === 'application/pdf' || file.mimetype.startsWith('image/');
-    if (extname && mimetype) {
+    const isPdf = file.mimetype === 'application/pdf';
+    if (isPdf) {
       cb(null, true);
     } else {
-      cb(new Error("Apenas PDFs e imagens são permitidos"));
+      cb(new Error("Apenas arquivos PDF são permitidos"));
+    }
+  },
+});
+
+// Upload for contact attachments (images and PDFs, max 5 files)
+const uploadContactAttachments = multer({
+  storage: uploadStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per file
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|pdf/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+    const mimetypeValid = allowedMimeTypes.includes(file.mimetype);
+    if (extname && mimetypeValid) {
+      cb(null, true);
+    } else {
+      cb(new Error("Apenas imagens (JPG, PNG, GIF) e PDFs são permitidos"));
     }
   },
 });
@@ -314,6 +329,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Social Media routes
+  app.get("/api/social-media", async (req, res) => {
+    try {
+      const socialMediaData = await storage.getSocialMedia();
+      res.json({ socialMedia: socialMediaData || {} });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar redes sociais" });
+    }
+  });
+
+  app.put("/api/social-media", requireAdmin, async (req, res) => {
+    try {
+      const socialMediaData = insertSocialMediaSchema.parse(req.body);
+      const updatedSocialMedia = await storage.updateSocialMedia(socialMediaData);
+      res.json({ socialMedia: updatedSocialMedia });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      console.error("Erro ao atualizar redes sociais:", error);
+      res.status(500).json({ message: "Erro ao atualizar redes sociais" });
+    }
+  });
+
   // Services routes
   app.get("/api/services", async (req, res) => {
     try {
@@ -548,40 +587,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Solicitações routes
-  app.post("/api/solicitacoes", uploadDocuments.fields([
-    { name: 'documentosVendedores', maxCount: 1 },
-    { name: 'documentosPessoasFisicasVendedores', maxCount: 1 },
-    { name: 'documentosCompradores', maxCount: 1 },
-    { name: 'documentosPessoasFisicasCompradores', maxCount: 1 },
-    { name: 'documentosImoveis', maxCount: 1 }
-  ]), async (req, res) => {
+  app.get("/api/solicitacoes", requireAdmin, async (req, res) => {
     try {
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      const dadosFormulario: any = { ...req.body };
+      const solicitacoes = await storage.getAllSolicitacoes();
+      res.json({ solicitacoes });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar solicitações" });
+    }
+  });
 
-      // Adicionar caminhos dos arquivos ao dados do formulário
-      if (files) {
-        Object.keys(files).forEach(fieldName => {
-          if (files[fieldName] && files[fieldName][0]) {
-            dadosFormulario[fieldName] = `/uploads/${files[fieldName][0].filename}`;
-          }
-        });
+  app.get("/api/solicitacoes/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const solicitacao = await storage.getSolicitacaoById(id);
+
+      if (!solicitacao) {
+        return res.status(404).json({ message: "Solicitação não encontrada" });
       }
 
-      // Determinar tipo e nome da solicitação baseado na URL
-      const tipoSolicitacao = "solicite-sua-escritura";
-      const nomeSolicitacao = "Solicite sua Escritura";
-
-      await storage.createSolicitacao({
-        tipoSolicitacao,
-        nomeSolicitacao,
-        dadosFormulario: JSON.stringify(dadosFormulario)
-      });
-
-      res.json({ message: "Solicitação enviada com sucesso!" });
+      res.json({ solicitacao });
     } catch (error) {
-      console.error("Erro ao criar solicitação:", error);
-      res.status(500).json({ message: "Erro ao enviar solicitação" });
+      res.status(500).json({ message: "Erro ao buscar solicitação" });
+    }
+  });
+
+  // Rota para solicitações sem upload (JSON)
+  app.post("/api/solicitacoes", async (req, res) => {
+    // Verifica se é JSON (não tem multipart)
+    const contentType = req.headers['content-type'] || '';
+
+    if (contentType.includes('application/json')) {
+      try {
+        const dadosFormulario: any = { ...req.body };
+
+        // Extrair tipo e nome da solicitação do corpo da requisição
+        const tipoSolicitacao = dadosFormulario.tipoSolicitacao || "certidao-de-escritura";
+        const nomeSolicitacao = dadosFormulario.nomeSolicitacao || "Certidão de Escritura";
+
+        // Remover campos de controle do dadosFormulario
+        delete dadosFormulario.tipoSolicitacao;
+        delete dadosFormulario.nomeSolicitacao;
+
+        await storage.createSolicitacao({
+          tipoSolicitacao,
+          nomeSolicitacao,
+          dadosFormulario: JSON.stringify(dadosFormulario)
+        });
+
+        res.json({ message: "Solicitação enviada com sucesso, aguarde nosso contato." });
+      } catch (error) {
+        console.error("Erro ao criar solicitação:", error);
+        res.status(500).json({ message: "Erro ao enviar solicitação" });
+      }
+    } else {
+      // Se não for JSON, passa para o próximo middleware (multer)
+      return uploadDocuments.fields([
+        { name: 'documentosVendedores', maxCount: 5 },
+        { name: 'documentosPessoasFisicasVendedores', maxCount: 5 },
+        { name: 'documentosCompradores', maxCount: 5 },
+        { name: 'documentosPessoasFisicasCompradores', maxCount: 5 },
+        { name: 'documentosImoveis', maxCount: 5 }
+      ])(req, res, async (err) => {
+        if (err) {
+          console.error("Erro no upload:", err);
+          return res.status(500).json({ message: err.message || "Erro ao fazer upload" });
+        }
+
+        try {
+          const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+          const dadosFormulario: any = { ...req.body };
+
+          // Extrair tipo e nome da solicitação do corpo da requisição
+          const tipoSolicitacao = dadosFormulario.tipoSolicitacao || "certidao-de-escritura";
+          const nomeSolicitacao = dadosFormulario.nomeSolicitacao || "Certidão de Escritura";
+
+          // Remover campos de controle do dadosFormulario
+          delete dadosFormulario.tipoSolicitacao;
+          delete dadosFormulario.nomeSolicitacao;
+
+          // Adicionar caminhos dos arquivos ao dados do formulário (múltiplos arquivos)
+          if (files) {
+            Object.keys(files).forEach(fieldName => {
+              if (files[fieldName] && files[fieldName].length > 0) {
+                // Salvar array de caminhos de arquivos
+                dadosFormulario[fieldName] = files[fieldName].map(file => `/uploads/${file.filename}`);
+              }
+            });
+          }
+
+          await storage.createSolicitacao({
+            tipoSolicitacao,
+            nomeSolicitacao,
+            dadosFormulario: JSON.stringify(dadosFormulario)
+          });
+
+          res.json({ message: "Solicitação enviada com sucesso, aguarde nosso contato." });
+        } catch (error) {
+          console.error("Erro ao criar solicitação:", error);
+          res.status(500).json({ message: "Erro ao enviar solicitação" });
+        }
+      });
     }
   });
 
@@ -685,12 +790,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/contact-messages", async (req, res) => {
+  app.post("/api/contact-messages", uploadContactAttachments.array('anexos', 5), async (req, res) => {
     try {
       console.log('📨 Recebendo mensagem de contato:', req.body);
-      const messageData = insertContactMessageSchema.parse(req.body);
+      console.log('📎 Arquivos anexados:', req.files);
+
+      // Convert lido string to boolean if it comes from FormData
+      const bodyData = {
+        ...req.body,
+        lido: req.body.lido === 'true' || req.body.lido === true
+      };
+
+      const messageData = insertContactMessageSchema.parse(bodyData);
+
+      // Process uploaded files
+      const files = req.files as Express.Multer.File[] | undefined;
+      let anexos: string[] = [];
+
+      if (files && files.length > 0) {
+        anexos = files.map(file => `/uploads/${file.filename}`);
+      }
+
       console.log('✅ Dados validados:', messageData);
-      const newMessage = await storage.createContactMessage(messageData);
+      console.log('📁 Anexos salvos:', anexos);
+
+      const newMessage = await storage.createContactMessage({
+        ...messageData,
+        anexos: anexos.length > 0 ? JSON.stringify(anexos) : undefined
+      });
+
       console.log('💾 Mensagem salva no banco:', newMessage);
       res.status(201).json({ message: newMessage });
     } catch (error) {
@@ -732,6 +860,280 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Mensagem deletada com sucesso" });
     } catch (error) {
       res.status(500).json({ message: "Erro ao deletar mensagem" });
+    }
+  });
+
+  // News routes
+  app.get("/api/news", async (req, res) => {
+    try {
+      const allNews = await storage.getAllNews();
+      res.json({ news: allNews });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar notícias" });
+    }
+  });
+
+  app.post("/api/upload/news", requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+      }
+
+      const filePath = `/uploads/${req.file.filename}`;
+      res.json({ filePath });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: error.message || "Erro ao fazer upload" });
+    }
+  });
+
+  app.post("/api/news", requireAdmin, async (req, res) => {
+    try {
+      const newsData = insertNewsSchema.parse(req.body);
+      const newNews = await storage.createNews(newsData);
+      res.status(201).json({ news: newNews });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao criar notícia" });
+    }
+  });
+
+  app.put("/api/news/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const newsData = insertNewsSchema.parse(req.body);
+      const updatedNews = await storage.updateNews(id, newsData);
+
+      if (!updatedNews) {
+        return res.status(404).json({ message: "Notícia não encontrada" });
+      }
+
+      res.json({ news: updatedNews });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao atualizar notícia" });
+    }
+  });
+
+  app.patch("/api/news/:id/toggle", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { active } = req.body;
+
+      const updatedNews = await storage.updateNews(id, { active });
+
+      if (!updatedNews) {
+        return res.status(404).json({ message: "Notícia não encontrada" });
+      }
+
+      res.json({ news: updatedNews });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao atualizar status da notícia" });
+    }
+  });
+
+  app.delete("/api/news/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteNews(id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Notícia não encontrada" });
+      }
+
+      res.json({ message: "Notícia deletada com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao deletar notícia" });
+    }
+  });
+
+  // Links routes
+  app.get("/api/links", async (req, res) => {
+    try {
+      const links = await storage.getLinks();
+      res.json({ links });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar links" });
+    }
+  });
+
+  app.post("/api/links", requireAdmin, async (req, res) => {
+    try {
+      const linkData = insertLinkSchema.parse(req.body);
+      const newLink = await storage.createLink(linkData);
+      res.json({ link: newLink });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao criar link" });
+    }
+  });
+
+  app.put("/api/links/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const linkData = insertLinkSchema.partial().parse(req.body);
+      const updatedLink = await storage.updateLink(id, linkData);
+
+      if (!updatedLink) {
+        return res.status(404).json({ message: "Link não encontrado" });
+      }
+
+      res.json({ link: updatedLink });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao atualizar link" });
+    }
+  });
+
+  app.patch("/api/links/:id/toggle", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { active } = req.body;
+
+      const updatedLink = await storage.updateLink(id, { active });
+
+      if (!updatedLink) {
+        return res.status(404).json({ message: "Link não encontrado" });
+      }
+
+      res.json({ link: updatedLink });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao atualizar status do link" });
+    }
+  });
+
+  app.delete("/api/links/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteLink(id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Link não encontrado" });
+      }
+
+      res.json({ message: "Link deletado com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao deletar link" });
+    }
+  });
+
+  // Dashboard stats
+  app.get("/api/dashboard/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+
+      // Tentar buscar métricas do Google Analytics se o script estiver configurado
+      let analyticsData = null;
+      try {
+        const scriptsData = await storage.getScripts();
+        if (scriptsData?.googleAnalytics) {
+          // Extrair o GA Measurement ID (formato: G-XXXXXXXXXX)
+          const gaMatch = scriptsData.googleAnalytics.match(/G-[A-Z0-9]+/);
+          if (gaMatch) {
+            analyticsData = {
+              measurementId: gaMatch[0],
+              // Nota: Para dados reais do GA, seria necessário configurar o Google Analytics Data API
+              // com credenciais de serviço. Por enquanto, retornamos apenas o ID.
+              configured: true,
+              message: "Google Analytics configurado. Para métricas detalhadas, configure a Data API com credenciais de serviço."
+            };
+          }
+        }
+      } catch (analyticsError) {
+        console.error("Erro ao buscar dados do Google Analytics:", analyticsError);
+      }
+
+      res.json({
+        ...stats,
+        analytics: analyticsData
+      });
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas do dashboard:", error);
+      res.status(500).json({ message: "Erro ao buscar estatísticas do dashboard" });
+    }
+  });
+
+  // Informacoes routes
+  app.get("/api/informacoes", async (req, res) => {
+    try {
+      const informacoes = await storage.getAllInformacoes();
+      res.json({ informacoes });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar informações" });
+    }
+  });
+
+  app.get("/api/informacoes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const informacao = await storage.getInformacao(id);
+
+      if (!informacao) {
+        return res.status(404).json({ message: "Informação não encontrada" });
+      }
+
+      res.json({ informacao });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar informação" });
+    }
+  });
+
+  app.post("/api/informacoes", requireAdmin, async (req, res) => {
+    try {
+      console.log("Dados recebidos:", req.body);
+      const informacaoData = insertInformacaoSchema.parse(req.body);
+      console.log("Dados validados:", informacaoData);
+      const newInformacao = await storage.createInformacao(informacaoData);
+      console.log("Informação criada:", newInformacao);
+      res.json({ informacao: newInformacao });
+    } catch (error: any) {
+      console.error("Erro ao criar informação:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao criar informação", error: error.message });
+    }
+  });
+
+  app.put("/api/informacoes/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const informacaoData = insertInformacaoSchema.partial().parse(req.body);
+      const updatedInformacao = await storage.updateInformacao(id, informacaoData);
+
+      if (!updatedInformacao) {
+        return res.status(404).json({ message: "Informação não encontrada" });
+      }
+
+      res.json({ informacao: updatedInformacao });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao atualizar informação" });
+    }
+  });
+
+  app.delete("/api/informacoes/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteInformacao(id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Informação não encontrada" });
+      }
+
+      res.json({ message: "Informação deletada com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao deletar informação" });
     }
   });
 

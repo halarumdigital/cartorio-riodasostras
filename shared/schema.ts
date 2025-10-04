@@ -24,7 +24,7 @@ export const contacts = mysqlTable("contacts", {
   id: int("id").primaryKey().autoincrement(),
   whatsapp: varchar("whatsapp", { length: 50 }),
   phone: varchar("phone", { length: 50 }),
-  email: varchar("email", { length: 255 }),
+  email: text("email"), // JSON array de emails
   address: text("address"),
   businessHours: text("business_hours"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -85,6 +85,7 @@ export const contactMessages = mysqlTable("contact_messages", {
   email: varchar("email", { length: 255 }).notNull(),
   telefone: varchar("telefone", { length: 20 }).notNull(),
   mensagem: text("mensagem").notNull(),
+  anexos: text("anexos"), // JSON array com caminhos dos arquivos
   lido: boolean("lido").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -105,6 +106,44 @@ export const scripts = mysqlTable("scripts", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const socialMedia = mysqlTable("social_media", {
+  id: int("id").primaryKey().autoincrement(),
+  youtube: varchar("youtube", { length: 500 }),
+  instagram: varchar("instagram", { length: 500 }),
+  facebook: varchar("facebook", { length: 500 }),
+  tiktok: varchar("tiktok", { length: 500 }),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const news = mysqlTable("news", {
+  id: int("id").primaryKey().autoincrement(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  imageUrl: varchar("image_url", { length: 500 }),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const links = mysqlTable("links", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  url: varchar("url", { length: 500 }).notNull(),
+  order: int("order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const informacoes = mysqlTable("informacoes", {
+  id: int("id").primaryKey().autoincrement(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  descricao: text("descricao"),
+  conteudo: text("conteudo"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -119,7 +158,7 @@ export const insertSiteSettingsSchema = z.object({
 export const insertContactsSchema = z.object({
   whatsapp: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
-  email: z.string().optional().nullable(),
+  email: z.string().optional().nullable(), // JSON string de array de emails
   address: z.string().optional().nullable(),
   businessHours: z.string().optional().nullable(),
 }).partial();
@@ -156,6 +195,9 @@ export const insertPageSchema = createInsertSchema(pages).omit({
 export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({
   id: true,
   createdAt: true,
+  anexos: true,
+}).extend({
+  anexos: z.string().optional(),
 });
 
 export const insertGoogleSettingsSchema = z.object({
@@ -169,6 +211,31 @@ export const insertScriptsSchema = z.object({
   facebookPixel: z.string().optional().nullable(),
   googleAnalytics: z.string().optional().nullable(),
 }).partial();
+
+export const insertSocialMediaSchema = z.object({
+  youtube: z.string().optional().nullable(),
+  instagram: z.string().optional().nullable(),
+  facebook: z.string().optional().nullable(),
+  tiktok: z.string().optional().nullable(),
+}).partial();
+
+export const insertNewsSchema = createInsertSchema(news).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLinkSchema = createInsertSchema(links).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertInformacaoSchema = createInsertSchema(informacoes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -192,3 +259,11 @@ export type GoogleSettings = typeof googleSettings.$inferSelect;
 export type InsertGoogleSettings = z.infer<typeof insertGoogleSettingsSchema>;
 export type Scripts = typeof scripts.$inferSelect;
 export type InsertScripts = z.infer<typeof insertScriptsSchema>;
+export type SocialMedia = typeof socialMedia.$inferSelect;
+export type InsertSocialMedia = z.infer<typeof insertSocialMediaSchema>;
+export type News = typeof news.$inferSelect;
+export type InsertNews = z.infer<typeof insertNewsSchema>;
+export type Link = typeof links.$inferSelect;
+export type InsertLink = z.infer<typeof insertLinkSchema>;
+export type Informacao = typeof informacoes.$inferSelect;
+export type InsertInformacao = z.infer<typeof insertInformacaoSchema>;

@@ -13,6 +13,13 @@ interface SiteSettings {
   footerLogo?: string;
 }
 
+interface SocialMedia {
+  youtube?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+}
+
 export default function Footer() {
   const { data: contactsData } = useQuery<{ contacts: Contacts }>({
     queryKey: ["/api/contacts"],
@@ -22,9 +29,14 @@ export default function Footer() {
     queryKey: ["/api/site-settings"],
   });
 
+  const { data: socialMediaData } = useQuery<{ socialMedia: SocialMedia }>({
+    queryKey: ["/api/social-media"],
+  });
+
   const contacts = contactsData?.contacts;
   const siteName = settingsData?.settings?.browserTabName || "Tabelionato";
   const footerLogo = settingsData?.settings?.footerLogo;
+  const socialMedia = socialMediaData?.socialMedia;
 
   return (
     <footer className="text-gray-300" style={{ backgroundColor: '#202841' }}>
@@ -37,16 +49,52 @@ export default function Footer() {
                 <img src={footerLogo} alt={siteName} style={{ height: '200px', width: 'auto' }} />
               </div>
             )}
-          </div>
-
-          {/* About Column */}
-          <div className="flex-1" data-testid="footer-about">
-            <div className="flex items-center space-x-2 mb-6">
-              <span className="font-serif text-2xl font-bold text-white" data-testid="text-footer-logo">{siteName}</span>
+            <div className="flex gap-4 mt-4">
+              {socialMedia?.youtube && (
+                <a
+                  href={socialMedia.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-brand-gold transition-colors"
+                  aria-label="YouTube"
+                >
+                  <span className="iconify" data-icon="mdi:youtube" data-width="28"></span>
+                </a>
+              )}
+              {socialMedia?.instagram && (
+                <a
+                  href={socialMedia.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-brand-gold transition-colors"
+                  aria-label="Instagram"
+                >
+                  <span className="iconify" data-icon="mdi:instagram" data-width="28"></span>
+                </a>
+              )}
+              {socialMedia?.facebook && (
+                <a
+                  href={socialMedia.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-brand-gold transition-colors"
+                  aria-label="Facebook"
+                >
+                  <span className="iconify" data-icon="mdi:facebook" data-width="28"></span>
+                </a>
+              )}
+              {socialMedia?.tiktok && (
+                <a
+                  href={socialMedia.tiktok}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-brand-gold transition-colors"
+                  aria-label="TikTok"
+                >
+                  <span className="iconify" data-icon="ic:baseline-tiktok" data-width="28"></span>
+                </a>
+              )}
             </div>
-            <p className="text-sm mb-4" data-testid="text-footer-description">
-              Seu parceiro de confiança em serviços notariais e de protesto. Estamos comprometidos em fornecer serviços excepcionais com integridade e dedicação.
-            </p>
           </div>
 
           {/* Serviços */}
@@ -86,15 +134,22 @@ export default function Footer() {
                   </a>
                 </li>
               )}
-              <li className="flex items-start space-x-3" data-testid="footer-contact-email">
-                <span className="iconify text-brand-gold mt-1" data-icon="mdi:email" data-width="20"></span>
-                <a
-                  href="mailto:registrocivilro@gmail.com"
-                  className="hover:text-brand-gold transition-colors"
-                >
-                  registrocivilro@gmail.com
-                </a>
-              </li>
+              {contacts?.email && (
+                <li className="flex items-start space-x-3" data-testid="footer-contact-email">
+                  <span className="iconify text-brand-gold mt-1" data-icon="mdi:email" data-width="20"></span>
+                  <div className="flex flex-col space-y-1">
+                    {contacts.email.replace(/[\[\]"]/g, '').split(',').map((email, index) => (
+                      <a
+                        key={index}
+                        href={`mailto:${email.trim()}`}
+                        className="hover:text-brand-gold transition-colors"
+                      >
+                        {email.trim()}
+                      </a>
+                    ))}
+                  </div>
+                </li>
+              )}
               {contacts?.businessHours && (
                 <li className="flex items-start space-x-3" data-testid="footer-contact-hours">
                   <span className="iconify text-brand-gold mt-1" data-icon="mdi:clock-outline" data-width="20"></span>

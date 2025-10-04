@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Dashboard from "./admin/dashboard";
 import SiteSettings from "./admin/site-settings";
 import Contacts from "./admin/contacts";
 import GoogleReviews from "./admin/google-reviews";
@@ -29,6 +30,11 @@ import Gallery from "./admin/gallery";
 import Pages from "./admin/pages";
 import Duvidas from "./admin/duvidas";
 import Scripts from "./admin/scripts";
+import SocialMedia from "./admin/social-media";
+import NewsPage from "./admin/news";
+import Links from "./admin/links";
+import Solicitacoes from "./admin/solicitacoes";
+import Informacoes from "./admin/informacoes";
 
 interface User {
   id: number;
@@ -48,7 +54,8 @@ interface SiteSettings {
 
 export default function Admin() {
   const [, setLocation] = useLocation();
-  const [matchUsers] = useRoute("/admin");
+  const [matchDashboard] = useRoute("/admin/dashboard");
+  const [matchUsers] = useRoute("/admin/users");
   const [matchSettings] = useRoute("/admin/site-settings");
   const [matchContacts] = useRoute("/admin/contacts");
   const [matchGoogleReviews] = useRoute("/admin/google-reviews");
@@ -58,6 +65,11 @@ export default function Admin() {
   const [matchPages] = useRoute("/admin/pages");
   const [matchDuvidas] = useRoute("/admin/duvidas");
   const [matchScripts] = useRoute("/admin/scripts");
+  const [matchSocialMedia] = useRoute("/admin/social-media");
+  const [matchNews] = useRoute("/admin/news");
+  const [matchLinks] = useRoute("/admin/links");
+  const [matchSolicitacoes] = useRoute("/admin/solicitacoes");
+  const [matchInformacoes] = useRoute("/admin/informacoes");
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -270,6 +282,19 @@ export default function Admin() {
               <a
                 href="/admin"
                 className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  !matchDashboard && !matchUsers && !matchSettings && !matchContacts && !matchGoogleReviews && !matchServices && !matchBanners && !matchGallery && !matchPages && !matchDuvidas && !matchScripts && !matchSocialMedia && !matchNews && !matchLinks && !matchSolicitacoes && !matchInformacoes
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-dashboard"
+              >
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="/admin/users"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
                   matchUsers
                     ? "text-brand-blue bg-white"
                     : "text-white hover:bg-brand-blue/80"
@@ -396,6 +421,71 @@ export default function Admin() {
                 Scripts
               </a>
             </li>
+            <li>
+              <a
+                href="/admin/social-media"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  matchSocialMedia
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-social-media"
+              >
+                Redes Sociais
+              </a>
+            </li>
+            <li>
+              <a
+                href="/admin/news"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  matchNews
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-news"
+              >
+                Notícias
+              </a>
+            </li>
+            <li>
+              <a
+                href="/admin/links"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  matchLinks
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-links"
+              >
+                Links
+              </a>
+            </li>
+            <li>
+              <a
+                href="/admin/solicitacoes"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  matchSolicitacoes
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-solicitacoes"
+              >
+                Solicitações
+              </a>
+            </li>
+            <li>
+              <a
+                href="/admin/informacoes"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  matchInformacoes
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-informacoes"
+              >
+                Informações
+              </a>
+            </li>
           </ul>
         </nav>
 
@@ -416,25 +506,7 @@ export default function Admin() {
       </aside>
 
       <main className="flex-1 px-6 py-8">
-          {matchSettings ? (
-            <SiteSettings />
-          ) : matchContacts ? (
-            <Contacts />
-          ) : matchGoogleReviews ? (
-            <GoogleReviews />
-          ) : matchServices ? (
-            <Services />
-          ) : matchBanners ? (
-            <Banners />
-          ) : matchGallery ? (
-            <Gallery />
-          ) : matchPages ? (
-            <Pages />
-          ) : matchDuvidas ? (
-            <Duvidas />
-          ) : matchScripts ? (
-            <Scripts />
-          ) : (
+          {matchUsers ? (
             <>
               <div className="flex justify-between items-center mb-8">
                 <div>
@@ -653,6 +725,36 @@ export default function Admin() {
                 </a>
               </div>
             </>
+          ) : matchSettings ? (
+            <SiteSettings />
+          ) : matchContacts ? (
+            <Contacts />
+          ) : matchGoogleReviews ? (
+            <GoogleReviews />
+          ) : matchServices ? (
+            <Services />
+          ) : matchBanners ? (
+            <Banners />
+          ) : matchGallery ? (
+            <Gallery />
+          ) : matchPages ? (
+            <Pages />
+          ) : matchDuvidas ? (
+            <Duvidas />
+          ) : matchScripts ? (
+            <Scripts />
+          ) : matchSocialMedia ? (
+            <SocialMedia />
+          ) : matchNews ? (
+            <NewsPage />
+          ) : matchLinks ? (
+            <Links />
+          ) : matchSolicitacoes ? (
+            <Solicitacoes />
+          ) : matchInformacoes ? (
+            <Informacoes />
+          ) : (
+            <Dashboard />
           )}
       </main>
     </div>

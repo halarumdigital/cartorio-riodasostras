@@ -14,6 +14,8 @@ import CertidaoSubstabelecimento from "@/pages/certidao-substabelecimento";
 import ConfirmacaoProcuracao from "@/pages/confirmacao-procuracao";
 import SoliciteEscritura from "@/pages/solicite-escritura";
 import Contato from "@/pages/contato";
+import LinksPage from "@/pages/links";
+import InformacoesPage from "@/pages/informacoes";
 import DynamicPage from "@/pages/dynamic-page";
 import WhatsAppButton from "@/components/whatsapp-button";
 import { useEffect } from "react";
@@ -31,6 +33,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/contato" component={Contato} />
+      <Route path="/links" component={LinksPage} />
+      <Route path="/informacoes" component={InformacoesPage} />
       <Route path="/certidao-de-escritura" component={CertidaoEscritura} />
       <Route path="/certidao-de-protesto" component={CertidaoProtesto} />
       <Route path="/certidao-de-procuracao" component={CertidaoProcuracao} />
@@ -47,6 +51,11 @@ function Router() {
       <Route path="/admin/pages" component={Admin} />
       <Route path="/admin/duvidas" component={Admin} />
       <Route path="/admin/scripts" component={Admin} />
+      <Route path="/admin/social-media" component={Admin} />
+      <Route path="/admin/news" component={Admin} />
+      <Route path="/admin/links" component={Admin} />
+      <Route path="/admin/solicitacoes" component={Admin} />
+      <Route path="/admin/informacoes" component={Admin} />
       <Route path="/:slug" component={DynamicPage} />
       <Route component={NotFound} />
     </Switch>

@@ -23,9 +23,61 @@ export default function CertidaoProtesto() {
     tipoEntrega: "Internet",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/solicitacoes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          tipoSolicitacao: "certidao-de-protesto",
+          nomeSolicitacao: "Certidão de Protesto",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage(data.message);
+        // Limpar formulário
+        setFormData({
+          tipoPessoa: "Pessoa Física",
+          cpf: "",
+          nomeCompleto: "",
+          email: "",
+          telefone: "",
+          telefone2: "",
+          endereco: "",
+          bairro: "",
+          numero: "",
+          cidade: "",
+          estado: "",
+          cep: "",
+          certidaoNome: "EM MEU NOME",
+          nomeOutraPessoa: "",
+          prazo: "",
+          informacoes: "",
+          tipoEntrega: "Internet",
+        });
+      } else {
+        setErrorMessage(data.message || "Erro ao enviar solicitação");
+      }
+    } catch (error) {
+      setErrorMessage("Erro ao enviar solicitação. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (
@@ -345,12 +397,26 @@ export default function CertidaoProtesto() {
                 </div>
               </div>
 
+              {/* Mensagens de Sucesso e Erro */}
+              {successMessage && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                  {successMessage}
+                </div>
+              )}
+
+              {errorMessage && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                  {errorMessage}
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-sm font-medium transition-colors"
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Enviar
+                {loading ? "Enviando..." : "Enviar"}
               </button>
 
               {/* Atenção */}

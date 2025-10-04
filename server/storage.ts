@@ -1,6 +1,6 @@
-import { type User, type InsertUser, users, type SiteSettings, type InsertSiteSettings, siteSettings, type Contacts, type InsertContacts, contacts, type Service, type InsertService, services, type Banner, type InsertBanner, banners, type GalleryItem, type InsertGalleryItem, gallery, type Solicitacao, type InsertSolicitacao, solicitacoes, type Page, type InsertPage, pages, type ContactMessage, type InsertContactMessage, contactMessages, type GoogleSettings, type InsertGoogleSettings, googleSettings, type Scripts, type InsertScripts, scripts } from "@shared/schema";
+import { type User, type InsertUser, users, type SiteSettings, type InsertSiteSettings, siteSettings, type Contacts, type InsertContacts, contacts, type Service, type InsertService, services, type Banner, type InsertBanner, banners, type GalleryItem, type InsertGalleryItem, gallery, type Solicitacao, type InsertSolicitacao, solicitacoes, type Page, type InsertPage, pages, type ContactMessage, type InsertContactMessage, contactMessages, type GoogleSettings, type InsertGoogleSettings, googleSettings, type Scripts, type InsertScripts, scripts, type SocialMedia, type InsertSocialMedia, socialMedia, type News, type InsertNews, news, type Link, type InsertLink, links, type Informacao, type InsertInformacao, informacoes } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count, and, gte, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -28,6 +28,8 @@ export interface IStorage {
   getGalleryItem(id: number): Promise<GalleryItem | undefined>;
   createGalleryItem(item: InsertGalleryItem): Promise<GalleryItem>;
   updateGalleryItem(id: number, item: Partial<InsertGalleryItem>): Promise<GalleryItem | undefined>;
+  getAllSolicitacoes(): Promise<Solicitacao[]>;
+  getSolicitacaoById(id: number): Promise<Solicitacao | undefined>;
   createSolicitacao(solicitacao: InsertSolicitacao): Promise<Solicitacao>;
   deleteGalleryItem(id: number): Promise<boolean>;
   getAllPages(): Promise<Page[]>;
@@ -45,6 +47,29 @@ export interface IStorage {
   updateGoogleSettings(settings: Partial<InsertGoogleSettings>): Promise<GoogleSettings>;
   getScripts(): Promise<Scripts | undefined>;
   updateScripts(scriptsData: Partial<InsertScripts>): Promise<Scripts>;
+  getSocialMedia(): Promise<SocialMedia | undefined>;
+  updateSocialMedia(socialMediaData: Partial<InsertSocialMedia>): Promise<SocialMedia>;
+  getAllNews(): Promise<News[]>;
+  getNews(id: number): Promise<News | undefined>;
+  createNews(newsData: InsertNews): Promise<News>;
+  updateNews(id: number, newsData: Partial<InsertNews>): Promise<News | undefined>;
+  deleteNews(id: number): Promise<boolean>;
+  getLinks(): Promise<Link[]>;
+  getLink(id: number): Promise<Link | undefined>;
+  createLink(linkData: InsertLink): Promise<Link>;
+  updateLink(id: number, linkData: Partial<InsertLink>): Promise<Link | undefined>;
+  deleteLink(id: number): Promise<boolean>;
+  getAllInformacoes(): Promise<Informacao[]>;
+  getInformacao(id: number): Promise<Informacao | undefined>;
+  createInformacao(informacao: InsertInformacao): Promise<Informacao>;
+  updateInformacao(id: number, informacao: Partial<InsertInformacao>): Promise<Informacao | undefined>;
+  deleteInformacao(id: number): Promise<boolean>;
+  getDashboardStats(): Promise<{
+    newSolicitacoes: number;
+    newDuvidas: number;
+    totalSolicitacoes: number;
+    totalDuvidas: number;
+  }>;
 }
 
 export class DbStorage implements IStorage {
@@ -230,6 +255,15 @@ export class DbStorage implements IStorage {
     return result[0].affectedRows > 0;
   }
 
+  async getAllSolicitacoes(): Promise<Solicitacao[]> {
+    return db.select().from(solicitacoes).orderBy(desc(solicitacoes.createdAt));
+  }
+
+  async getSolicitacaoById(id: number): Promise<Solicitacao | undefined> {
+    const result = await db.select().from(solicitacoes).where(eq(solicitacoes.id, id)).limit(1);
+    return result[0];
+  }
+
   async createSolicitacao(solicitacao: InsertSolicitacao): Promise<Solicitacao> {
     const [newSolicitacao] = await db.insert(solicitacoes).values(solicitacao);
     if (!newSolicitacao.insertId) {
@@ -349,6 +383,167 @@ export class DbStorage implements IStorage {
       if (!newScripts) throw new Error("Failed to create scripts");
       return newScripts;
     }
+  }
+
+  async getSocialMedia(): Promise<SocialMedia | undefined> {
+    const result = await db.select().from(socialMedia).limit(1);
+    return result[0];
+  }
+
+  async updateSocialMedia(socialMediaData: Partial<InsertSocialMedia>): Promise<SocialMedia> {
+    const existing = await this.getSocialMedia();
+
+    if (existing) {
+      await db.update(socialMedia).set(socialMediaData).where(eq(socialMedia.id, existing.id));
+      const updated = await this.getSocialMedia();
+      if (!updated) throw new Error("Failed to update social media");
+      return updated;
+    } else {
+      const result = await db.insert(socialMedia).values(socialMediaData);
+      const newSocialMedia = await this.getSocialMedia();
+      if (!newSocialMedia) throw new Error("Failed to create social media");
+      return newSocialMedia;
+    }
+  }
+
+  async getAllNews(): Promise<News[]> {
+    return db.select().from(news).orderBy(desc(news.createdAt));
+  }
+
+  async getNews(id: number): Promise<News | undefined> {
+    const result = await db.select().from(news).where(eq(news.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createNews(insertNews: InsertNews): Promise<News> {
+    const result = await db.insert(news).values({
+      ...insertNews,
+      updatedAt: new Date(),
+    });
+    const newNews = await this.getNews(Number(result[0].insertId));
+    if (!newNews) {
+      throw new Error("Failed to create news");
+    }
+    return newNews;
+  }
+
+  async updateNews(id: number, newsData: Partial<InsertNews>): Promise<News | undefined> {
+    await db.update(news).set({
+      ...newsData,
+      updatedAt: new Date(),
+    }).where(eq(news.id, id));
+    return this.getNews(id);
+  }
+
+  async deleteNews(id: number): Promise<boolean> {
+    const result = await db.delete(news).where(eq(news.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getLinks(): Promise<Link[]> {
+    const result = await db.select().from(links).orderBy(links.order);
+    return result;
+  }
+
+  async getLink(id: number): Promise<Link | undefined> {
+    const result = await db.select().from(links).where(eq(links.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createLink(linkData: InsertLink): Promise<Link> {
+    const result = await db.insert(links).values(linkData);
+    return this.getLink(Number(result[0].insertId)) as Promise<Link>;
+  }
+
+  async updateLink(id: number, linkData: Partial<InsertLink>): Promise<Link | undefined> {
+    await db.update(links).set({
+      ...linkData,
+      updatedAt: new Date(),
+    }).where(eq(links.id, id));
+    return this.getLink(id);
+  }
+
+  async deleteLink(id: number): Promise<boolean> {
+    const result = await db.delete(links).where(eq(links.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getAllInformacoes(): Promise<Informacao[]> {
+    return db.select().from(informacoes).orderBy(desc(informacoes.createdAt));
+  }
+
+  async getInformacao(id: number): Promise<Informacao | undefined> {
+    const result = await db.select().from(informacoes).where(eq(informacoes.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createInformacao(informacao: InsertInformacao): Promise<Informacao> {
+    const [newInformacao] = await db.insert(informacoes).values(informacao);
+    if (!newInformacao.insertId) {
+      throw new Error("Failed to create informacao");
+    }
+    const result = await db.select().from(informacoes).where(eq(informacoes.id, newInformacao.insertId));
+    if (!result[0]) {
+      throw new Error("Failed to retrieve created informacao");
+    }
+    return result[0];
+  }
+
+  async updateInformacao(id: number, informacao: Partial<InsertInformacao>): Promise<Informacao | undefined> {
+    await db.update(informacoes).set({
+      ...informacao,
+      updatedAt: new Date(),
+    }).where(eq(informacoes.id, id));
+    return this.getInformacao(id);
+  }
+
+  async deleteInformacao(id: number): Promise<boolean> {
+    const result = await db.delete(informacoes).where(eq(informacoes.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getDashboardStats(): Promise<{
+    newSolicitacoes: number;
+    newDuvidas: number;
+    totalSolicitacoes: number;
+    totalDuvidas: number;
+  }> {
+    // Calcular data de 7 dias atrás
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Contar total de solicitações
+    const totalSolicitacoesResult = await db
+      .select({ count: count() })
+      .from(solicitacoes);
+    const totalSolicitacoes = totalSolicitacoesResult[0]?.count || 0;
+
+    // Contar solicitações novas (últimos 7 dias)
+    const newSolicitacoesResult = await db
+      .select({ count: count() })
+      .from(solicitacoes)
+      .where(gte(solicitacoes.createdAt, sevenDaysAgo));
+    const newSolicitacoes = newSolicitacoesResult[0]?.count || 0;
+
+    // Contar total de dúvidas (mensagens de contato)
+    const totalDuvidasResult = await db
+      .select({ count: count() })
+      .from(contactMessages);
+    const totalDuvidas = totalDuvidasResult[0]?.count || 0;
+
+    // Contar dúvidas novas (últimos 7 dias)
+    const newDuvidasResult = await db
+      .select({ count: count() })
+      .from(contactMessages)
+      .where(gte(contactMessages.createdAt, sevenDaysAgo));
+    const newDuvidas = newDuvidasResult[0]?.count || 0;
+
+    return {
+      newSolicitacoes,
+      newDuvidas,
+      totalSolicitacoes,
+      totalDuvidas,
+    };
   }
 }
 

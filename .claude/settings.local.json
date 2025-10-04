@@ -15,7 +15,13 @@
       "Bash(mysql:*)",
       "Bash(del migrationsrun-migration.js)",
       "Bash(del migrationscreate-pages-table.js)",
-      "Bash(del migrationscreate-google-settings-table.js)"
+      "Bash(del migrationscreate-google-settings-table.js)",
+      "Bash(del migrationscreate-social-media-table.js)",
+      "Bash(cmd /c:*)",
+      "Bash(del create-links-table.js)",
+      "Bash(del migrationsrun-fix-charset.js)",
+      "Bash(del migrationsrun-add-anexos.js)",
+      "Bash(npx kill-port:*)"
     ],
     "deny": [],
     "ask": []

@@ -171,14 +171,18 @@ export default function Contato() {
               )}
 
               {contacts?.email && (
-                <p className="text-sm">
-                  <a
-                    href={`mailto:${contacts.email}`}
-                    className="hover:text-brand-gold transition-colors"
-                  >
-                    {contacts.email}
-                  </a>
-                </p>
+                <div className="text-sm space-y-1">
+                  {contacts.email.replace(/[\[\]"]/g, '').split(/[;,]/).map((email, index) => (
+                    <p key={index}>
+                      <a
+                        href={`mailto:${email.trim()}`}
+                        className="hover:text-brand-gold transition-colors"
+                      >
+                        {email.trim()}
+                      </a>
+                    </p>
+                  ))}
+                </div>
               )}
             </div>
           </div>

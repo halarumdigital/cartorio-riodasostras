@@ -18,10 +18,10 @@ export default function Contacts() {
   const [formData, setFormData] = useState({
     whatsapp: "",
     phone: "",
-    email: "",
     address: "",
     businessHours: "",
   });
+  const [emails, setEmails] = useState<string[]>([""]);
 
   const { data: contactsData, isLoading } = useQuery<{ contacts: Contacts }>({
     queryKey: ["/api/contacts"],
@@ -32,10 +32,19 @@ export default function Contacts() {
       setFormData({
         whatsapp: contactsData.contacts.whatsapp || "",
         phone: contactsData.contacts.phone || "",
-        email: contactsData.contacts.email || "",
         address: contactsData.contacts.address || "",
         businessHours: contactsData.contacts.businessHours || "",
       });
+
+      // Parse emails from JSON
+      try {
+        const parsedEmails = contactsData.contacts.email
+          ? JSON.parse(contactsData.contacts.email)
+          : [""];
+        setEmails(Array.isArray(parsedEmails) ? parsedEmails : [""]);
+      } catch {
+        setEmails([contactsData.contacts.email || ""]);
+      }
     }
   }, [contactsData]);
 
@@ -70,7 +79,29 @@ export default function Contacts() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateContactsMutation.mutate(formData);
+    // Filter empty emails and convert to JSON
+    const validEmails = emails.filter(email => email.trim() !== "");
+    const dataToSend = {
+      ...formData,
+      email: JSON.stringify(validEmails),
+    };
+    updateContactsMutation.mutate(dataToSend);
+  };
+
+  const addEmailField = () => {
+    if (emails.length < 10) {
+      setEmails([...emails, ""]);
+    }
+  };
+
+  const removeEmailField = (index: number) => {
+    setEmails(emails.filter((_, i) => i !== index));
+  };
+
+  const updateEmail = (index: number, value: string) => {
+    const newEmails = [...emails];
+    newEmails[index] = value;
+    setEmails(newEmails);
   };
 
   if (isLoading) {
@@ -118,15 +149,41 @@ export default function Contacts() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email
+            Emails
           </label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="contato@exemplo.com"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
-          />
+          <div className="space-y-3">
+            {emails.map((email, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => updateEmail(index, e.target.value)}
+                  placeholder="contato@exemplo.com"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                />
+                {emails.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => removeEmailField(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remover
+                  </Button>
+                )}
+              </div>
+            ))}
+            {emails.length < 10 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addEmailField}
+                className="w-full"
+              >
+                + Adicionar Email
+              </Button>
+            )}
+          </div>
         </div>
 
         <div>

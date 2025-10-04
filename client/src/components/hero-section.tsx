@@ -23,7 +23,7 @@ export default function HeroSection() {
 
   if (!activeBanners.length) {
     return (
-      <section className="hero-bg text-white">
+      <section className="hero-bg text-white" id="home">
         <div className="container mx-auto px-6 py-48 flex flex-col items-start justify-center">
           <p className="text-lg" data-testid="text-hero-subtitle">The Most Talented Law Firm</p>
           <h1 className="font-serif text-6xl md:text-7xl font-bold mt-2 leading-tight max-w-2xl" data-testid="text-hero-title">
@@ -42,7 +42,7 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="relative h-[800px] overflow-hidden">
+    <section className="relative h-[800px] overflow-hidden" id="home">
       {activeBanners.map((banner, index) => (
         <div
           key={banner.id}

@@ -11,6 +11,7 @@ export default function Appointment() {
     telefone: "",
     mensagem: ""
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const { data: contactsData } = useQuery<{ contacts: Contacts }>({
     queryKey: ["/api/contacts"],
@@ -20,10 +21,21 @@ export default function Appointment() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const formDataToSend = new FormData();
+      formDataToSend.append('nome', data.nome);
+      formDataToSend.append('email', data.email);
+      formDataToSend.append('telefone', data.telefone);
+      formDataToSend.append('mensagem', data.mensagem);
+      formDataToSend.append('lido', 'false');
+
+      // Add files
+      selectedFiles.forEach(file => {
+        formDataToSend.append('anexos', file);
+      });
+
       const response = await fetch("/api/contact-messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: formDataToSend,
       });
       if (!response.ok) {
         const error = await response.json();
@@ -42,6 +54,7 @@ export default function Appointment() {
         telefone: "",
         mensagem: ""
       });
+      setSelectedFiles([]);
     },
     onError: (error: Error) => {
       toast({
@@ -62,6 +75,52 @@ export default function Appointment() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+
+      // Validate max 5 files
+      if (fileArray.length > 5) {
+        toast({
+          variant: "destructive",
+          title: "Limite de arquivos excedido",
+          description: "Você pode enviar no máximo 5 arquivos.",
+        });
+        return;
+      }
+
+      // Validate each file size (max 5MB)
+      const invalidFiles = fileArray.filter(file => file.size > 5 * 1024 * 1024);
+      if (invalidFiles.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Arquivo muito grande",
+          description: "Cada arquivo deve ter no máximo 5MB.",
+        });
+        return;
+      }
+
+      // Validate file types
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+      const invalidTypes = fileArray.filter(file => !allowedTypes.includes(file.type));
+      if (invalidTypes.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Tipo de arquivo inválido",
+          description: "Apenas imagens (JPG, PNG, GIF) e PDFs são permitidos.",
+        });
+        return;
+      }
+
+      setSelectedFiles(fileArray);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -92,12 +151,17 @@ export default function Appointment() {
                   <span className="iconify text-brand-gold mt-1" data-icon="mdi:email" data-width="24"></span>
                   <div>
                     <h4 className="font-bold mb-1">Email</h4>
-                    <a
-                      href={`mailto:${contacts.email}`}
-                      className="text-gray-300 hover:text-brand-gold transition-colors"
-                    >
-                      {contacts.email}
-                    </a>
+                    <div className="flex flex-col space-y-1">
+                      {contacts.email.replace(/[\[\]"]/g, '').split(',').map((email, index) => (
+                        <a
+                          key={index}
+                          href={`mailto:${email.trim()}`}
+                          className="text-gray-300 hover:text-brand-gold transition-colors"
+                        >
+                          {email.trim()}
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -170,6 +234,39 @@ export default function Appointment() {
                 data-testid="textarea-message"
                 required
               ></textarea>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Anexar arquivos (opcional)
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
+                  onChange={handleFileChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-brand-blue text-gray-800"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Máximo 5 arquivos de até 5MB cada (JPG, PNG, GIF ou PDF)
+                </p>
+
+                {selectedFiles.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded">
+                        <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="text-red-500 hover:text-red-700 ml-2"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <button
                 type="submit"

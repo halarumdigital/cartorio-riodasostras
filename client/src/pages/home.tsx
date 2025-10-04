@@ -6,6 +6,8 @@ import Statistics from "@/components/statistics";
 import Testimonials from "@/components/testimonials";
 import Appointment from "@/components/appointment";
 import Gallery from "@/components/gallery";
+import LinksSection from "@/components/links-section";
+import NewsSection from "@/components/news-section";
 import Footer from "@/components/footer";
 
 export default function Home() {
@@ -19,6 +21,8 @@ export default function Home() {
       <Testimonials />
       <Appointment />
       <Gallery />
+      <LinksSection />
+      <NewsSection />
       <Footer />
     </div>
   );

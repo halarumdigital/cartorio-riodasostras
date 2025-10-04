@@ -25,6 +25,7 @@ interface ContactMessage {
   email: string;
   telefone: string;
   mensagem: string;
+  anexos?: string;
   lido: boolean;
   createdAt: string;
 }
@@ -234,6 +235,46 @@ export default function Duvidas() {
                   <p className="text-gray-900 whitespace-pre-wrap">{selectedMessage.mensagem}</p>
                 </div>
               </div>
+
+              {selectedMessage.anexos && JSON.parse(selectedMessage.anexos).length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Anexos
+                  </label>
+                  <div className="space-y-2">
+                    {JSON.parse(selectedMessage.anexos).map((anexo: string, index: number) => {
+                      const fileName = anexo.split('/').pop() || 'arquivo';
+                      const isImage = /\.(jpg|jpeg|png|gif)$/i.test(anexo);
+                      const isPdf = /\.pdf$/i.test(anexo);
+
+                      return (
+                        <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded border border-gray-200">
+                          <div className="flex items-center space-x-2">
+                            {isImage && (
+                              <span className="iconify text-blue-600" data-icon="mdi:image" data-width="20"></span>
+                            )}
+                            {isPdf && (
+                              <span className="iconify text-red-600" data-icon="mdi:file-pdf" data-width="20"></span>
+                            )}
+                            <span className="text-sm text-gray-700">{fileName}</span>
+                          </div>
+                          <a
+                            href={anexo}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Button variant="ghost" size="sm">
+                              Baixar
+                            </Button>
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end pt-4">
                 <Button

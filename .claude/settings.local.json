@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(if exist \"e:\\cartorio-riodasostras\\node_modules\\.vite\" rmdir /s /q \"e:\\cartorio-riodasostras\\node_modules\\.vite\")",
+      "Bash(if exist \"e:\\cartorio-riodasostras\\uploads\" echo exists)",
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx drizzle-kit push:*)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(del create-services-table.js)",
+      "Bash(mysql:*)",
+      "Bash(del migrationsrun-migration.js)",
+      "Bash(del migrationscreate-pages-table.js)",
+      "Bash(del migrationscreate-google-settings-table.js)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -173,15 +173,16 @@
 
   .nav-link {
     font-weight: 600;
+    font-size: 1.125rem;
     transition: color 0.3s;
   }
-  
+
   .nav-link:hover {
-    color: var(--brand-gold);
+    color: var(--brand-blue);
   }
-  
+
   .nav-link.active {
-    color: var(--brand-gold);
+    color: var(--brand-blue);
   }
   
   .dropdown-arrow {

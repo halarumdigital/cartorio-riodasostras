@@ -2,6 +2,14 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+
+interface SiteSettings {
+  id?: number;
+  mainLogo?: string;
+  footerLogo?: string;
+  browserTabName?: string;
+}
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -10,6 +18,10 @@ export default function Login() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
+  });
+
+  const { data: settingsData } = useQuery<{ settings: SiteSettings }>({
+    queryKey: ["/api/site-settings"],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +76,15 @@ export default function Login() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
-            <span className="font-serif text-4xl font-bold text-brand-blue">BARRISTAR</span>
+            {settingsData?.settings?.mainLogo ? (
+              <img
+                src={settingsData.settings.mainLogo}
+                alt="Logo"
+                className="h-[180px] object-contain"
+              />
+            ) : (
+              <span className="font-serif text-4xl font-bold text-brand-blue">BARRISTAR</span>
+            )}
           </div>
           <h2 className="mt-6 text-center text-3xl font-serif font-bold text-brand-blue">
             Área Administrativa

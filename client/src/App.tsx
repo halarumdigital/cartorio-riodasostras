@@ -42,6 +42,7 @@ function Router() {
       <Route path="/confirmacao-de-procuracao" component={ConfirmacaoProcuracao} />
       <Route path="/solicite-sua-escritura" component={SoliciteEscritura} />
       <Route path="/admin" component={Admin} />
+      <Route path="/admin/users" component={Admin} />
       <Route path="/admin/site-settings" component={Admin} />
       <Route path="/admin/contacts" component={Admin} />
       <Route path="/admin/google-reviews" component={Admin} />

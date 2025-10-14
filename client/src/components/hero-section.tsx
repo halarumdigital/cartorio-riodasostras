@@ -16,7 +16,7 @@ export default function HeroSection() {
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
-    }, 10000); // 10 segundos
+    }, 5000); // 5 segundos
 
     return () => clearInterval(interval);
   }, [activeBanners.length]);

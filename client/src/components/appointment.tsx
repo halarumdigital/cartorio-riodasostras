@@ -124,7 +124,7 @@ export default function Appointment() {
   };
 
   return (
-    <section className="appointment-bg text-white max-lg:py-16 py-24" id="contact">
+    <section className="appointment-bg text-white max-lg:py-16 max-lg:mt-12 py-24 mt-20" id="contact">
       <div className="container mx-auto max-lg:px-4 px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 max-lg:gap-8 gap-12 items-center">
           <div>

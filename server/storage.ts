@@ -1,4 +1,4 @@
-import { type User, type InsertUser, users, type SiteSettings, type InsertSiteSettings, siteSettings, type Contacts, type InsertContacts, contacts, type Service, type InsertService, services, type Banner, type InsertBanner, banners, type GalleryItem, type InsertGalleryItem, gallery, type Solicitacao, type InsertSolicitacao, solicitacoes, type Page, type InsertPage, pages, type ContactMessage, type InsertContactMessage, contactMessages, type GoogleSettings, type InsertGoogleSettings, googleSettings, type Scripts, type InsertScripts, scripts, type SocialMedia, type InsertSocialMedia, socialMedia, type News, type InsertNews, news, type Link, type InsertLink, links, type Informacao, type InsertInformacao, informacoes } from "@shared/schema";
+import { type User, type InsertUser, users, type SiteSettings, type InsertSiteSettings, siteSettings, type Contacts, type InsertContacts, contacts, type Service, type InsertService, services, type Banner, type InsertBanner, banners, type GalleryItem, type InsertGalleryItem, gallery, type Solicitacao, type InsertSolicitacao, solicitacoes, type Page, type InsertPage, pages, type ContactMessage, type InsertContactMessage, contactMessages, type GoogleSettings, type InsertGoogleSettings, googleSettings, type Scripts, type InsertScripts, scripts, type SocialMedia, type InsertSocialMedia, socialMedia, type News, type InsertNews, news, type Link, type InsertLink, links, type Informacao, type InsertInformacao, informacoes, type Aviso, type InsertAviso, avisos } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, and, gte, sql } from "drizzle-orm";
 
@@ -64,6 +64,11 @@ export interface IStorage {
   createInformacao(informacao: InsertInformacao): Promise<Informacao>;
   updateInformacao(id: number, informacao: Partial<InsertInformacao>): Promise<Informacao | undefined>;
   deleteInformacao(id: number): Promise<boolean>;
+  getAllAvisos(): Promise<Aviso[]>;
+  getAviso(id: number): Promise<Aviso | undefined>;
+  createAviso(aviso: InsertAviso): Promise<Aviso>;
+  updateAviso(id: number, aviso: Partial<InsertAviso>): Promise<Aviso | undefined>;
+  deleteAviso(id: number): Promise<boolean>;
   getDashboardStats(): Promise<{
     newSolicitacoes: number;
     newDuvidas: number;
@@ -499,6 +504,40 @@ export class DbStorage implements IStorage {
 
   async deleteInformacao(id: number): Promise<boolean> {
     const result = await db.delete(informacoes).where(eq(informacoes.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getAllAvisos(): Promise<Aviso[]> {
+    return db.select().from(avisos).orderBy(desc(avisos.createdAt));
+  }
+
+  async getAviso(id: number): Promise<Aviso | undefined> {
+    const result = await db.select().from(avisos).where(eq(avisos.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createAviso(aviso: InsertAviso): Promise<Aviso> {
+    const [newAviso] = await db.insert(avisos).values(aviso);
+    if (!newAviso.insertId) {
+      throw new Error("Failed to create aviso");
+    }
+    const result = await db.select().from(avisos).where(eq(avisos.id, newAviso.insertId));
+    if (!result[0]) {
+      throw new Error("Failed to retrieve created aviso");
+    }
+    return result[0];
+  }
+
+  async updateAviso(id: number, aviso: Partial<InsertAviso>): Promise<Aviso | undefined> {
+    await db.update(avisos).set({
+      ...aviso,
+      updatedAt: new Date(),
+    }).where(eq(avisos.id, id));
+    return this.getAviso(id);
+  }
+
+  async deleteAviso(id: number): Promise<boolean> {
+    const result = await db.delete(avisos).where(eq(avisos.id, id));
     return result[0].affectedRows > 0;
   }
 

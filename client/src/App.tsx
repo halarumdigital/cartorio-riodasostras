@@ -57,6 +57,7 @@ function Router() {
       <Route path="/admin/links" component={Admin} />
       <Route path="/admin/solicitacoes" component={Admin} />
       <Route path="/admin/informacoes" component={Admin} />
+      <Route path="/admin/avisos" component={Admin} />
       <Route path="/:slug" component={DynamicPage} />
       <Route component={NotFound} />
     </Switch>

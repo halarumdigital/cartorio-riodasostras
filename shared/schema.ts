@@ -144,6 +144,13 @@ export const informacoes = mysqlTable("informacoes", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const avisos = mysqlTable("avisos", {
+  id: int("id").primaryKey().autoincrement(),
+  texto: text("texto").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -237,6 +244,12 @@ export const insertInformacaoSchema = createInsertSchema(informacoes).omit({
   updatedAt: true,
 });
 
+export const insertAvisoSchema = createInsertSchema(avisos).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
@@ -267,3 +280,5 @@ export type Link = typeof links.$inferSelect;
 export type InsertLink = z.infer<typeof insertLinkSchema>;
 export type Informacao = typeof informacoes.$inferSelect;
 export type InsertInformacao = z.infer<typeof insertInformacaoSchema>;
+export type Aviso = typeof avisos.$inferSelect;
+export type InsertAviso = z.infer<typeof insertAvisoSchema>;

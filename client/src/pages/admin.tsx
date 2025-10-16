@@ -35,6 +35,7 @@ import NewsPage from "./admin/news";
 import Links from "./admin/links";
 import Solicitacoes from "./admin/solicitacoes";
 import Informacoes from "./admin/informacoes";
+import Avisos from "./admin/avisos";
 
 interface User {
   id: number;
@@ -70,6 +71,7 @@ export default function Admin() {
   const [matchLinks] = useRoute("/admin/links");
   const [matchSolicitacoes] = useRoute("/admin/solicitacoes");
   const [matchInformacoes] = useRoute("/admin/informacoes");
+  const [matchAvisos] = useRoute("/admin/avisos");
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -282,7 +284,7 @@ export default function Admin() {
               <a
                 href="/admin"
                 className={`flex items-center px-4 py-3 rounded-md font-medium ${
-                  !matchDashboard && !matchUsers && !matchSettings && !matchContacts && !matchGoogleReviews && !matchServices && !matchBanners && !matchGallery && !matchPages && !matchDuvidas && !matchScripts && !matchSocialMedia && !matchNews && !matchLinks && !matchSolicitacoes && !matchInformacoes
+                  !matchDashboard && !matchUsers && !matchSettings && !matchContacts && !matchGoogleReviews && !matchServices && !matchBanners && !matchGallery && !matchPages && !matchDuvidas && !matchScripts && !matchSocialMedia && !matchNews && !matchLinks && !matchSolicitacoes && !matchInformacoes && !matchAvisos
                     ? "text-brand-blue bg-white"
                     : "text-white hover:bg-brand-blue/80"
                 }`}
@@ -484,6 +486,19 @@ export default function Admin() {
                 data-testid="menu-informacoes"
               >
                 Informações
+              </a>
+            </li>
+            <li>
+              <a
+                href="/admin/avisos"
+                className={`flex items-center px-4 py-3 rounded-md font-medium ${
+                  matchAvisos
+                    ? "text-brand-blue bg-white"
+                    : "text-white hover:bg-brand-blue/80"
+                }`}
+                data-testid="menu-avisos"
+              >
+                Avisos
               </a>
             </li>
           </ul>
@@ -753,6 +768,8 @@ export default function Admin() {
             <Solicitacoes />
           ) : matchInformacoes ? (
             <Informacoes />
+          ) : matchAvisos ? (
+            <Avisos />
           ) : (
             <Dashboard />
           )}

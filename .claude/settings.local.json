@@ -22,7 +22,9 @@
       "Bash(del migrationsrun-fix-charset.js)",
       "Bash(del migrationsrun-add-anexos.js)",
       "Bash(npx kill-port:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(del create-avisos-table.sql)",
+      "Bash(del run-migration.js)"
     ],
     "deny": [],
     "ask": []

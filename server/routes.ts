@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import passport from "./auth";
 import bcrypt from "bcryptjs";
-import { insertUserSchema, type User, insertSiteSettingsSchema, insertContactsSchema, insertServiceSchema, type Service, insertBannerSchema, type Banner, insertGallerySchema, type GalleryItem, insertPageSchema, type Page, insertContactMessageSchema, type ContactMessage, insertGoogleSettingsSchema, insertScriptsSchema, insertSocialMediaSchema, insertNewsSchema, type News, insertLinkSchema, type Link, insertInformacaoSchema, type Informacao } from "@shared/schema";
+import { insertUserSchema, type User, insertSiteSettingsSchema, insertContactsSchema, insertServiceSchema, type Service, insertBannerSchema, type Banner, insertGallerySchema, type GalleryItem, insertPageSchema, type Page, insertContactMessageSchema, type ContactMessage, insertGoogleSettingsSchema, insertScriptsSchema, insertSocialMediaSchema, insertNewsSchema, type News, insertLinkSchema, type Link, insertInformacaoSchema, type Informacao, insertAvisoSchema, type Aviso } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -1134,6 +1134,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Informação deletada com sucesso" });
     } catch (error) {
       res.status(500).json({ message: "Erro ao deletar informação" });
+    }
+  });
+
+  // Avisos routes
+  app.get("/api/avisos", async (req, res) => {
+    try {
+      const avisos = await storage.getAllAvisos();
+      res.json({ avisos });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar avisos" });
+    }
+  });
+
+  app.get("/api/avisos/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const aviso = await storage.getAviso(id);
+
+      if (!aviso) {
+        return res.status(404).json({ message: "Aviso não encontrado" });
+      }
+
+      res.json({ aviso });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar aviso" });
+    }
+  });
+
+  app.post("/api/avisos", requireAdmin, async (req, res) => {
+    try {
+      console.log("Dados recebidos:", req.body);
+      const avisoData = insertAvisoSchema.parse(req.body);
+      console.log("Dados validados:", avisoData);
+      const newAviso = await storage.createAviso(avisoData);
+      console.log("Aviso criado:", newAviso);
+      res.json({ aviso: newAviso });
+    } catch (error: any) {
+      console.error("Erro ao criar aviso:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao criar aviso", error: error.message });
+    }
+  });
+
+  app.put("/api/avisos/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const avisoData = insertAvisoSchema.partial().parse(req.body);
+      const updatedAviso = await storage.updateAviso(id, avisoData);
+
+      if (!updatedAviso) {
+        return res.status(404).json({ message: "Aviso não encontrado" });
+      }
+
+      res.json({ aviso: updatedAviso });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao atualizar aviso" });
+    }
+  });
+
+  app.delete("/api/avisos/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAviso(id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Aviso não encontrado" });
+      }
+
+      res.json({ message: "Aviso deletado com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao deletar aviso" });
     }
   });
 

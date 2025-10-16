@@ -9,6 +9,7 @@ import Gallery from "@/components/gallery";
 import LinksSection from "@/components/links-section";
 import NewsSection from "@/components/news-section";
 import Footer from "@/components/footer";
+import AvisosPopup from "@/components/avisos-popup";
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
       <NewsSection />
       <AboutSection />
       <Footer />
+      <AvisosPopup />
     </div>
   );
 }

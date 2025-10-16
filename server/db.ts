@@ -9,6 +9,7 @@ const connection = mysql.createPool({
   user: config.mysql.user,
   password: config.mysql.password,
   database: config.mysql.database,
+  charset: 'utf8mb4',
 });
 
 export const db = drizzle(connection, { schema, mode: "default" });

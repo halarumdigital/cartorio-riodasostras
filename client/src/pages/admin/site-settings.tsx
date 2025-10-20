@@ -9,19 +9,51 @@ interface SiteSettings {
   mainLogo?: string;
   footerLogo?: string;
   browserTabName?: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPassword?: string;
+  smtpSecure?: boolean;
+  solicitacoesEmail?: string;
 }
 
 export default function SiteSettings() {
   const { toast } = useToast();
   const [browserTabName, setBrowserTabName] = useState("");
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState<number>(587);
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPassword, setSmtpPassword] = useState("");
+  const [smtpSecure, setSmtpSecure] = useState(true);
+  const [solicitacoesEmail, setSolicitacoesEmail] = useState("");
 
   const { data: settingsData, isLoading } = useQuery<{ settings: SiteSettings }>({
     queryKey: ["/api/site-settings"],
   });
 
   useEffect(() => {
-    if (settingsData?.settings?.browserTabName) {
-      setBrowserTabName(settingsData.settings.browserTabName);
+    if (settingsData?.settings) {
+      if (settingsData.settings.browserTabName) {
+        setBrowserTabName(settingsData.settings.browserTabName);
+      }
+      if (settingsData.settings.smtpHost) {
+        setSmtpHost(settingsData.settings.smtpHost);
+      }
+      if (settingsData.settings.smtpPort) {
+        setSmtpPort(settingsData.settings.smtpPort);
+      }
+      if (settingsData.settings.smtpUser) {
+        setSmtpUser(settingsData.settings.smtpUser);
+      }
+      if (settingsData.settings.smtpPassword) {
+        setSmtpPassword(settingsData.settings.smtpPassword);
+      }
+      if (settingsData.settings.smtpSecure !== undefined) {
+        setSmtpSecure(settingsData.settings.smtpSecure);
+      }
+      if (settingsData.settings.solicitacoesEmail) {
+        setSolicitacoesEmail(settingsData.settings.solicitacoesEmail);
+      }
     }
   }, [settingsData]);
 
@@ -124,6 +156,69 @@ export default function SiteSettings() {
     }
   };
 
+  const handleSaveSmtpSettings = async () => {
+    try {
+      await updateSettingsMutation.mutateAsync({
+        smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPassword,
+        smtpSecure,
+      });
+      toast({
+        title: "Configurações SMTP salvas com sucesso!",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar configurações SMTP",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleSaveSolicitacoesEmail = async () => {
+    try {
+      await updateSettingsMutation.mutateAsync({ solicitacoesEmail });
+      toast({
+        title: "Email de solicitações salvo com sucesso!",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar email de solicitações",
+        description: error.message,
+      });
+    }
+  };
+
+  const testEmailMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/test-email", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.details);
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Email de teste enviado!",
+        description: `Verifique a caixa de entrada de ${data.emailDestino}`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar email de teste",
+        description: error.message,
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -212,6 +307,151 @@ export default function SiteSettings() {
             <Button
               onClick={handleSaveBrowserTabName}
               disabled={!browserTabName || updateSettingsMutation.isPending}
+              className="bg-brand-blue hover:bg-opacity-90"
+            >
+              {updateSettingsMutation.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold text-brand-blue mb-4">
+            Configurações SMTP
+          </h3>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+            <h4 className="font-semibold text-sm text-blue-900 mb-2">Configurações para Gmail:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Host: smtp.gmail.com</li>
+              <li>• Porta: 587</li>
+              <li>• <strong>Conexão Segura: DESMARCADO (porta 587 usa STARTTLS)</strong></li>
+              <li>• Senha: Use uma Senha de App (não a senha normal)</li>
+              <li className="mt-2">
+                <a
+                  href="https://myaccount.google.com/apppasswords"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800"
+                >
+                  Criar Senha de App do Google →
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Servidor SMTP (Host)
+                </label>
+                <input
+                  type="text"
+                  value={smtpHost}
+                  onChange={(e) => setSmtpHost(e.target.value)}
+                  placeholder="smtp.gmail.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Porta SMTP
+                </label>
+                <input
+                  type="number"
+                  value={smtpPort}
+                  onChange={(e) => setSmtpPort(Number(e.target.value))}
+                  placeholder="587"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Usuário SMTP (Email)
+                </label>
+                <input
+                  type="email"
+                  value={smtpUser}
+                  onChange={(e) => setSmtpUser(e.target.value)}
+                  placeholder="seu-email@gmail.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Senha SMTP (use Senha de App para Gmail)
+                </label>
+                <input
+                  type="password"
+                  value={smtpPassword}
+                  onChange={(e) => setSmtpPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="smtpSecure"
+                  checked={smtpSecure}
+                  onChange={(e) => setSmtpSecure(e.target.checked)}
+                  className="h-4 w-4 text-brand-blue focus:ring-brand-gold border-gray-300 rounded"
+                />
+                <label htmlFor="smtpSecure" className="text-sm font-medium text-gray-700">
+                  Usar conexão segura SSL/TLS direta (porta 465)
+                </label>
+              </div>
+              {smtpPort === 587 && smtpSecure && (
+                <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                  ⚠️ Atenção: Porta 587 usa STARTTLS. Desmarque esta opção!
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Desmarque para porta 587 (STARTTLS). Marque apenas para porta 465 (SSL direto).
+              </p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                onClick={() => testEmailMutation.mutate()}
+                disabled={testEmailMutation.isPending}
+                variant="outline"
+                className="border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white"
+              >
+                {testEmailMutation.isPending ? "Enviando..." : "Testar Email"}
+              </Button>
+              <Button
+                onClick={handleSaveSmtpSettings}
+                disabled={updateSettingsMutation.isPending}
+                className="bg-brand-blue hover:bg-opacity-90"
+              >
+                {updateSettingsMutation.isPending ? "Salvando..." : "Salvar Configurações SMTP"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold text-brand-blue mb-4">
+            Email para Solicitações
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Configure o email para onde serão enviadas as solicitações do site.
+          </p>
+          <div className="flex items-center space-x-4">
+            <input
+              type="email"
+              value={solicitacoesEmail}
+              onChange={(e) => setSolicitacoesEmail(e.target.value)}
+              placeholder="solicitacoes@cartorio.com.br"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+            />
+            <Button
+              onClick={handleSaveSolicitacoesEmail}
+              disabled={!solicitacoesEmail || updateSettingsMutation.isPending}
               className="bg-brand-blue hover:bg-opacity-90"
             >
               {updateSettingsMutation.isPending ? "Salvando..." : "Salvar"}

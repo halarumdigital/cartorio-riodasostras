@@ -8,6 +8,7 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
+import { sendEmail, formatContactEmailHtml, formatSolicitacaoEmailHtml } from "./emailService";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -634,6 +635,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dadosFormulario: JSON.stringify(dadosFormulario)
         });
 
+        console.log('💾 Solicitação salva no banco');
+
+        // Tentar enviar email
+        try {
+          const settings = await storage.getSiteSettings();
+
+          if (settings?.solicitacoesEmail) {
+            console.log('📧 Enviando email de solicitação para:', settings.solicitacoesEmail);
+
+            await sendEmail(settings, {
+              to: settings.solicitacoesEmail,
+              subject: `Nova Solicitação: ${nomeSolicitacao}`,
+              html: formatSolicitacaoEmailHtml({
+                tipoSolicitacao,
+                nomeSolicitacao,
+                dadosFormulario
+              })
+            });
+
+            console.log('✅ Email de solicitação enviado com sucesso!');
+          } else {
+            console.log('⚠️ Email de solicitações não configurado');
+          }
+        } catch (emailError) {
+          console.error('❌ Erro ao enviar email de solicitação:', emailError);
+          // Não falha a requisição se o email não for enviado
+        }
+
         res.json({ message: "Solicitação enviada com sucesso, aguarde nosso contato." });
       } catch (error) {
         console.error("Erro ao criar solicitação:", error);
@@ -680,6 +709,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
             nomeSolicitacao,
             dadosFormulario: JSON.stringify(dadosFormulario)
           });
+
+          console.log('💾 Solicitação com arquivos salva no banco');
+
+          // Tentar enviar email
+          try {
+            const settings = await storage.getSiteSettings();
+
+            if (settings?.solicitacoesEmail) {
+              console.log('📧 Enviando email de solicitação com anexos para:', settings.solicitacoesEmail);
+
+              await sendEmail(settings, {
+                to: settings.solicitacoesEmail,
+                subject: `Nova Solicitação: ${nomeSolicitacao}`,
+                html: formatSolicitacaoEmailHtml({
+                  tipoSolicitacao,
+                  nomeSolicitacao,
+                  dadosFormulario
+                })
+              });
+
+              console.log('✅ Email de solicitação enviado com sucesso!');
+            } else {
+              console.log('⚠️ Email de solicitações não configurado');
+            }
+          } catch (emailError) {
+            console.error('❌ Erro ao enviar email de solicitação:', emailError);
+            // Não falha a requisição se o email não for enviado
+          }
 
           res.json({ message: "Solicitação enviada com sucesso, aguarde nosso contato." });
         } catch (error) {
@@ -820,6 +877,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       console.log('💾 Mensagem salva no banco:', newMessage);
+
+      // Tentar enviar email
+      try {
+        const settings = await storage.getSiteSettings();
+
+        if (settings?.solicitacoesEmail) {
+          console.log('📧 Enviando email para:', settings.solicitacoesEmail);
+
+          const emailHtml = formatContactEmailHtml({
+            nome: messageData.nome,
+            email: messageData.email,
+            telefone: messageData.telefone,
+            mensagem: messageData.mensagem,
+            anexos: anexos.length > 0 ? anexos : undefined
+          });
+
+          console.log('📧 Anexos sendo enviados no email:', anexos);
+
+          await sendEmail(settings, {
+            to: settings.solicitacoesEmail,
+            subject: `Nova mensagem de contato - ${messageData.nome}`,
+            html: emailHtml
+          });
+
+          console.log('✅ Email enviado com sucesso!');
+        } else {
+          console.log('⚠️ Email de solicitações não configurado');
+        }
+      } catch (emailError) {
+        console.error('❌ Erro ao enviar email:', emailError);
+        // Não falha a requisição se o email não for enviado
+        // A mensagem já foi salva no banco
+      }
+
       res.status(201).json({ message: newMessage });
     } catch (error) {
       console.error('❌ Erro ao criar mensagem de contato:', error);
@@ -1022,6 +1113,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Link deletado com sucesso" });
     } catch (error) {
       res.status(500).json({ message: "Erro ao deletar link" });
+    }
+  });
+
+  // Test email route
+  app.post("/api/test-email", requireAdmin, async (req, res) => {
+    try {
+      const settings = await storage.getSiteSettings();
+
+      if (!settings?.solicitacoesEmail) {
+        return res.status(400).json({
+          message: "Email de solicitações não configurado. Configure em Configurações do Site."
+        });
+      }
+
+      if (!settings.smtpHost || !settings.smtpPort || !settings.smtpUser || !settings.smtpPassword) {
+        return res.status(400).json({
+          message: "Configurações SMTP incompletas. Configure em Configurações do Site."
+        });
+      }
+
+      console.log('🧪 Testando envio de email...');
+
+      await sendEmail(settings, {
+        to: settings.solicitacoesEmail,
+        subject: 'Teste de Email - Cartório',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+          </head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2 style="color: #1e3a8a;">✅ Email de Teste</h2>
+            <p>Se você recebeu este email, as configurações SMTP estão funcionando corretamente!</p>
+            <p><strong>Configurações utilizadas:</strong></p>
+            <ul>
+              <li>Host: ${settings.smtpHost}</li>
+              <li>Porta: ${settings.smtpPort}</li>
+              <li>Usuário: ${settings.smtpUser}</li>
+            </ul>
+          </body>
+          </html>
+        `
+      });
+
+      res.json({
+        message: "Email de teste enviado com sucesso! Verifique a caixa de entrada.",
+        emailDestino: settings.solicitacoesEmail
+      });
+    } catch (error: any) {
+      console.error('❌ Erro ao enviar email de teste:', error);
+      res.status(500).json({
+        message: "Erro ao enviar email de teste",
+        error: error.message,
+        details: "Verifique se a senha SMTP é uma Senha de App do Google e se a opção 'Conexão Segura' está DESMARCADA para porta 587."
+      });
     }
   });
 

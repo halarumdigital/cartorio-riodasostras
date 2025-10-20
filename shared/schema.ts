@@ -17,6 +17,12 @@ export const siteSettings = mysqlTable("site_settings", {
   mainLogo: varchar("main_logo", { length: 255 }),
   footerLogo: varchar("footer_logo", { length: 255 }),
   browserTabName: text("browser_tab_name"),
+  smtpHost: varchar("smtp_host", { length: 255 }),
+  smtpPort: int("smtp_port"),
+  smtpUser: varchar("smtp_user", { length: 255 }),
+  smtpPassword: varchar("smtp_password", { length: 255 }),
+  smtpSecure: boolean("smtp_secure").default(true),
+  solicitacoesEmail: varchar("solicitacoes_email", { length: 255 }),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
@@ -160,6 +166,12 @@ export const insertSiteSettingsSchema = z.object({
   browserTabName: z.string().optional().nullable(),
   mainLogo: z.string().optional().nullable(),
   footerLogo: z.string().optional().nullable(),
+  smtpHost: z.string().optional().nullable(),
+  smtpPort: z.number().optional().nullable(),
+  smtpUser: z.string().optional().nullable(),
+  smtpPassword: z.string().optional().nullable(),
+  smtpSecure: z.boolean().optional().nullable(),
+  solicitacoesEmail: z.string().email("Email inválido").or(z.literal("")).optional().nullable(),
 }).partial();
 
 export const insertContactsSchema = z.object({

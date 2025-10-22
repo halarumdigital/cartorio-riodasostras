@@ -270,8 +270,8 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
               <div className="space-y-3">
                 {processo.andamentos
                   .sort((a: any, b: any) =>
-                    new Date(b.data || b.dt_andamento || 0).getTime() -
-                    new Date(a.data || a.dt_andamento || 0).getTime()
+                    new Date(a.data || a.dt_andamento || 0).getTime() -
+                    new Date(b.data || b.dt_andamento || 0).getTime()
                   )
                   .map((andamento: any, index: number) => (
                     <div key={index} className="bg-yellow-50 rounded-lg p-3 sm:p-4 border-l-4 border-brand-gold">

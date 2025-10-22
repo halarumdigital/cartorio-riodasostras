@@ -1193,57 +1193,219 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Montar a URL da API externa
-      const apiUrl = settings.apiUrl.replace(/\/$/, ''); // Remove barra final se houver
+      let apiUrl = settings.apiUrl.replace(/\/$/, ''); // Remove barra final se houver
+
+      // Se não tem protocolo, adicionar http por padrão
+      if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+        apiUrl = `http://${apiUrl}`;
+      }
+
       const fullUrl = `${apiUrl}:${settings.apiPort}/marcha?num_seq=${numeroProcesso}&identificacao=${cpf}`;
 
       console.log('🔍 Consultando processo na API externa:', fullUrl);
-
-      // Fazer a requisição para a API externa
-      const response = await fetch(fullUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${settings.apiToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      console.log('📡 Configurações:', {
+        url: settings.apiUrl,
+        port: settings.apiPort,
+        hasToken: !!settings.apiToken
       });
 
-      if (!response.ok) {
-        console.error('❌ Erro na consulta:', response.status, response.statusText);
+      // Criar timeout de 15 segundos
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        // Fazer a requisição para a API externa
+        const response = await fetch(fullUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${settings.apiToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.error('❌ Erro na consulta:', response.status, response.statusText);
+
+          if (response.status === 404) {
+            return res.status(404).json({
+              message: "Processo não encontrado. Verifique o número do processo e CPF."
+            });
+          }
+
+          if (response.status === 401) {
+            return res.status(401).json({
+              message: "Token de autenticação inválido. Verifique as configurações da API."
+            });
+          }
+
+          return res.status(response.status).json({
+            message: `Erro ao consultar processo. Status: ${response.status}`
+          });
+        }
+
+        const data = await response.json();
+        console.log('✅ Processo encontrado!');
+        console.log('📋 Dados do processo:', JSON.stringify(data, null, 2));
+
+        // Se a resposta for um array, pegar o primeiro item e garantir que tem partes e andamentos
+        let processoData = Array.isArray(data) ? data[0] : data;
+
+        // Log das partes e andamentos para debug
+        if (processoData) {
+          if (processoData.partes) {
+            console.log(`👥 ${processoData.partes.length} partes encontradas`);
+          }
+          if (processoData.andamentos) {
+            console.log(`📝 ${processoData.andamentos.length} andamentos encontrados`);
+          }
+        }
+
+        res.json(data);
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+
+        if (fetchError.name === 'AbortError') {
+          console.error('⏱️ Timeout na consulta à API externa');
+          return res.status(504).json({
+            message: "Tempo limite excedido. A API externa demorou muito para responder."
+          });
+        }
+
+        // Re-throw para ser capturado pelo catch externo
+        throw fetchError;
+      }
+    } catch (error: any) {
+      console.error('❌ Erro ao consultar processo:', error);
+      console.error('🔍 URL tentada:', fullUrl);
+      console.error('📊 Tipo do erro:', error.code || error.name);
+
+      // Tratamento específico para erro de conexão recusada
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('ECONNREFUSED')) {
+        return res.status(503).json({
+          message: "Não foi possível conectar à API externa. O serviço pode estar temporariamente indisponível. Tente novamente em alguns instantes."
+        });
+      }
+
+      // Tratamento para erro de DNS
+      if (error.code === 'ENOTFOUND' || error.message?.includes('ENOTFOUND')) {
+        return res.status(503).json({
+          message: "Não foi possível localizar o servidor da API. Verifique as configurações da URL."
+        });
+      }
+
+      // Erro genérico
+      res.status(500).json({
+        message: "Erro ao processar a consulta. Por favor, tente novamente.",
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  });
+
+  // Teste de conexão com API externa
+  app.post("/api/test-api-connection", requireAdmin, async (req, res) => {
+    try {
+      const settings = await storage.getSiteSettings();
+
+      if (!settings?.apiUrl || !settings?.apiToken || !settings?.apiPort) {
+        return res.status(400).json({
+          message: "Configure a URL, Token e Porta da API antes de testar."
+        });
+      }
+
+      // Montar a URL da API externa
+      let apiUrl = settings.apiUrl.replace(/\/$/, '');
+
+      // Se não tem protocolo, adicionar http por padrão
+      if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+        apiUrl = `http://${apiUrl}`;
+      }
+
+      // Teste simples de conexão - usar um número de processo de teste
+      const testUrl = `${apiUrl}:${settings.apiPort}/marcha?num_seq=12345&identificacao=00000000000`;
+
+      console.log('🧪 Testando conexão com API:', testUrl);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      try {
+        const response = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${settings.apiToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        console.log('📊 Resposta do teste:', response.status);
+
+        if (response.status === 401) {
+          return res.status(401).json({
+            message: "Token de autenticação inválido. Verifique o token configurado.",
+            status: "error"
+          });
+        }
 
         if (response.status === 404) {
-          return res.status(404).json({
-            message: "Processo não encontrado"
+          // 404 é esperado para um processo inexistente, mas significa que a API está funcionando
+          return res.json({
+            message: "Conexão com a API estabelecida com sucesso!",
+            status: "success",
+            details: "A API está respondendo corretamente."
+          });
+        }
+
+        if (response.ok) {
+          return res.json({
+            message: "Conexão com a API estabelecida com sucesso!",
+            status: "success"
           });
         }
 
         return res.status(response.status).json({
-          message: "Erro ao consultar processo na API externa"
+          message: `API retornou status ${response.status}`,
+          status: "warning"
+        });
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+
+        if (fetchError.name === 'AbortError') {
+          return res.status(504).json({
+            message: "Timeout na conexão. A API demorou muito para responder.",
+            status: "error"
+          });
+        }
+
+        throw fetchError;
+      }
+    } catch (error: any) {
+      console.error('❌ Erro no teste de conexão:', error);
+
+      if (error.code === 'ECONNREFUSED') {
+        return res.status(503).json({
+          message: "Não foi possível conectar à API. Verifique se a URL e porta estão corretas.",
+          status: "error"
         });
       }
 
-      const data = await response.json();
-      console.log('✅ Processo encontrado!');
-      console.log('📋 Dados do processo:', JSON.stringify(data, null, 2));
-
-      // Se a resposta for um array, pegar o primeiro item e garantir que tem partes e andamentos
-      let processoData = Array.isArray(data) ? data[0] : data;
-
-      // Log das partes e andamentos para debug
-      if (processoData) {
-        if (processoData.partes) {
-          console.log(`👥 ${processoData.partes.length} partes encontradas`);
-        }
-        if (processoData.andamentos) {
-          console.log(`📝 ${processoData.andamentos.length} andamentos encontrados`);
-        }
+      if (error.code === 'ENOTFOUND') {
+        return res.status(503).json({
+          message: "URL da API não encontrada. Verifique o endereço configurado.",
+          status: "error"
+        });
       }
 
-      res.json(data);
-    } catch (error: any) {
-      console.error('❌ Erro ao consultar processo:', error);
-      res.status(500).json({
-        message: "Erro ao consultar processo",
+      return res.status(500).json({
+        message: "Erro ao testar conexão",
+        status: "error",
         error: error.message
       });
     }

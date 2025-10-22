@@ -501,6 +501,16 @@ export default function SiteSettings() {
             Configure as informações de conexão com a API externa.
           </p>
 
+          {/* Aviso sobre o token */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+            <h4 className="font-semibold text-sm text-yellow-900 mb-2">⚠️ Importante:</h4>
+            <ul className="text-sm text-yellow-800 space-y-1">
+              <li>• O Token da API é necessário para autenticação</li>
+              <li>• Certifique-se de inserir o token Bearer correto fornecido pelo administrador do sistema</li>
+              <li>• Use o botão "Testar Conexão" para verificar se as configurações estão corretas</li>
+            </ul>
+          </div>
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -547,7 +557,41 @@ export default function SiteSettings() {
               </p>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3">
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/test-api-connection", {
+                      method: "POST",
+                      credentials: "include",
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                      toast({
+                        title: "Teste de Conexão",
+                        description: data.message,
+                      });
+                    } else {
+                      toast({
+                        variant: "destructive",
+                        title: "Erro no Teste",
+                        description: data.message,
+                      });
+                    }
+                  } catch (error: any) {
+                    toast({
+                      variant: "destructive",
+                      title: "Erro ao testar conexão",
+                      description: error.message,
+                    });
+                  }
+                }}
+                variant="outline"
+                className="border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white"
+              >
+                Testar Conexão
+              </Button>
               <Button
                 onClick={handleSaveApiSettings}
                 disabled={updateSettingsMutation.isPending}

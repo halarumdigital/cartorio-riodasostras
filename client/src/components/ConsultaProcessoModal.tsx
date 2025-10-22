@@ -48,7 +48,19 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Erro ao consultar processo");
+
+        // Tratamento especial para diferentes tipos de erro
+        if (response.status === 503) {
+          throw new Error("Serviço temporariamente indisponível. Por favor, tente novamente em alguns instantes.");
+        } else if (response.status === 504) {
+          throw new Error("A consulta demorou muito tempo. Por favor, tente novamente.");
+        } else if (response.status === 404) {
+          throw new Error("Processo não encontrado. Verifique o número do processo e CPF.");
+        } else if (response.status === 401) {
+          throw new Error("Problema na configuração da API. Entre em contato com o suporte.");
+        }
+
+        throw new Error(error.message || "Erro ao consultar processo. Por favor, tente novamente.");
       }
 
       return response.json();
@@ -362,7 +374,14 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {error instanceof Error ? error.message : "Erro ao consultar processo"}
+                <div className="space-y-2">
+                  <div>{error instanceof Error ? error.message : "Erro ao consultar processo"}</div>
+                  {(error instanceof Error && error.message.includes("indisponível")) && (
+                    <div className="text-xs mt-2 opacity-80">
+                      ⚠️ O servidor de consultas pode estar em manutenção ou fora do ar temporariamente.
+                    </div>
+                  )}
+                </div>
               </AlertDescription>
             </Alert>
           )}

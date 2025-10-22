@@ -26,7 +26,8 @@
       "Bash(del create-avisos-table.sql)",
       "Bash(del run-migration.js)",
       "Bash(dir:*)",
-      "Bash(del migrationsrun-add-smtp-fields.mjs)"
+      "Bash(del migrationsrun-add-smtp-fields.mjs)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

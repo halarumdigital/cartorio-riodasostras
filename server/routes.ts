@@ -1247,6 +1247,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
+        // Verificar o content-type antes de tentar fazer parse JSON
+        const contentType = response.headers.get('content-type');
+
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('❌ API retornou HTML ao invés de JSON');
+          console.error('📄 Primeiros 500 caracteres:', text.substring(0, 500));
+
+          return res.status(502).json({
+            message: "A API externa retornou uma resposta inválida (HTML ao invés de JSON). Verifique as configurações."
+          });
+        }
+
         const data = await response.json();
         console.log('✅ Processo encontrado!');
         console.log('📋 Dados do processo:', JSON.stringify(data, null, 2));

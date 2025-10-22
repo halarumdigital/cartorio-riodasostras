@@ -501,7 +501,7 @@ export default function SiteSettings() {
             Configure as informações de conexão com a API externa.
           </p>
 
-          {/* Aviso sobre o token */}
+          {/* Aviso sobre o token e firewall */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
             <h4 className="font-semibold text-sm text-yellow-900 mb-2">⚠️ Importante:</h4>
             <ul className="text-sm text-yellow-800 space-y-1">
@@ -510,6 +510,21 @@ export default function SiteSettings() {
               <li>• Use o botão "Testar Conexão" para verificar se as configurações estão corretas</li>
             </ul>
           </div>
+
+          {/* Aviso sobre firewall em produção */}
+          {window.location.hostname !== 'localhost' && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+              <h4 className="font-semibold text-sm text-red-900 mb-2">🔥 Atenção - Firewall:</h4>
+              <p className="text-sm text-red-800 mb-2">
+                Se o teste de conexão falhar com erro "ECONNREFUSED", pode ser necessário:
+              </p>
+              <ul className="text-sm text-red-800 space-y-1">
+                <li>• Liberar a porta 3529 no firewall do servidor</li>
+                <li>• Adicionar o IP 191.248.114.59 na whitelist</li>
+                <li>• Contatar o administrador da hospedagem</li>
+              </ul>
+            </div>
+          )}
 
           <div className="space-y-4">
             <div>

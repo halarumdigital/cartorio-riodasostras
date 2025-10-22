@@ -36,6 +36,7 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
         throw new Error("Preencha todos os campos");
       }
 
+      // Usar apenas a conexão via servidor backend
       const response = await fetch("/api/consulta-processo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,7 +50,7 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
       if (!response.ok) {
         const error = await response.json();
 
-        // Tratamento especial para diferentes tipos de erro
+        // Tratamento específico de erros
         if (response.status === 503) {
           throw new Error("Serviço temporariamente indisponível. Por favor, tente novamente em alguns instantes.");
         } else if (response.status === 504) {
@@ -63,7 +64,8 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
         throw new Error(error.message || "Erro ao consultar processo. Por favor, tente novamente.");
       }
 
-      return response.json();
+      const data = await response.json();
+      return data;
     },
     enabled: shouldSearch && !!numeroProcesso && !!cpf,
     retry: false,
@@ -125,24 +127,24 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
           </AlertDescription>
         </Alert>
 
-        <Tabs defaultValue="informacoes" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100 h-auto p-1">
+        <Tabs defaultValue="informacoes" className="w-full flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 h-auto p-1 flex-shrink-0">
             <TabsTrigger
               value="informacoes"
-              className="data-[state=active]:bg-white flex flex-col sm:flex-row items-center py-2 sm:py-1.5"
+              className="data-[state=active]:bg-white flex items-center justify-center py-2 px-2"
             >
-              <FileText className="h-4 w-4 sm:mr-2" />
-              <span className="text-xs sm:text-sm mt-1 sm:mt-0">Informações</span>
+              <FileText className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-xs sm:text-sm truncate">Informações</span>
             </TabsTrigger>
             <TabsTrigger
               value="partes"
-              className="data-[state=active]:bg-white flex flex-col sm:flex-row items-center py-2 sm:py-1.5 relative"
+              className="data-[state=active]:bg-white flex items-center justify-center py-2 px-2 relative"
             >
-              <Users className="h-4 w-4 sm:mr-2" />
-              <span className="text-xs sm:text-sm mt-1 sm:mt-0">
+              <Users className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-xs sm:text-sm truncate">
                 Partes
                 {partesCount > 0 && (
-                  <span className="ml-1 text-xs bg-brand-blue text-white px-1.5 py-0.5 rounded-full">
+                  <span className="ml-1 text-xs bg-brand-blue text-white px-1.5 py-0.5 rounded-full inline-block">
                     {partesCount}
                   </span>
                 )}
@@ -150,13 +152,13 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
             </TabsTrigger>
             <TabsTrigger
               value="andamentos"
-              className="data-[state=active]:bg-white flex flex-col sm:flex-row items-center py-2 sm:py-1.5 relative"
+              className="data-[state=active]:bg-white flex items-center justify-center py-2 px-2 relative"
             >
-              <ScrollText className="h-4 w-4 sm:mr-2" />
-              <span className="text-xs sm:text-sm mt-1 sm:mt-0">
+              <ScrollText className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-xs sm:text-sm truncate">
                 Andamentos
                 {andamentosCount > 0 && (
-                  <span className="ml-1 text-xs bg-brand-blue text-white px-1.5 py-0.5 rounded-full">
+                  <span className="ml-1 text-xs bg-brand-blue text-white px-1.5 py-0.5 rounded-full inline-block">
                     {andamentosCount}
                   </span>
                 )}
@@ -164,8 +166,8 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="informacoes" className="space-y-3 mt-4">
-            <div className="bg-gray-50 rounded-lg p-4">
+          <TabsContent value="informacoes" className="mt-4 overflow-y-auto max-h-[350px] pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
               <div className="space-y-3">
                 {processo.num_seq && (
                   <div className="flex flex-col sm:flex-row sm:items-center">
@@ -225,11 +227,11 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
             </div>
           </TabsContent>
 
-          <TabsContent value="partes" className="space-y-3 mt-4">
+          <TabsContent value="partes" className="mt-4 overflow-y-auto max-h-[350px] pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
             {processo.partes && processo.partes.length > 0 ? (
               <div className="space-y-3">
                 {processo.partes.map((parte: any, index: number) => (
-                  <div key={index} className="bg-blue-50 rounded-lg p-4 border-l-4 border-brand-gold">
+                  <div key={index} className="bg-blue-50 rounded-lg p-3 sm:p-4 border-l-4 border-brand-gold">
                     <div className="space-y-2">
                       <div className="font-semibold text-gray-900 text-lg">
                         {parte.nome || parte.nome_parte || "Parte " + (index + 1)}
@@ -263,7 +265,7 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
             )}
           </TabsContent>
 
-          <TabsContent value="andamentos" className="space-y-3 mt-4">
+          <TabsContent value="andamentos" className="mt-4 overflow-y-auto max-h-[350px] pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
             {processo.andamentos && processo.andamentos.length > 0 ? (
               <div className="space-y-3">
                 {processo.andamentos
@@ -272,7 +274,7 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
                     new Date(a.data || a.dt_andamento || 0).getTime()
                   )
                   .map((andamento: any, index: number) => (
-                    <div key={index} className="bg-yellow-50 rounded-lg p-4 border-l-4 border-brand-gold">
+                    <div key={index} className="bg-yellow-50 rounded-lg p-3 sm:p-4 border-l-4 border-brand-gold">
                       <div className="space-y-2">
                         {(andamento.data || andamento.dt_andamento) && (
                           <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -316,8 +318,8 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-brand-blue">
             Consulte seu Processo
           </DialogTitle>
@@ -326,7 +328,7 @@ export function ConsultaProcessoModal({ isOpen, onClose }: ConsultaProcessoModal
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
+        <div className="space-y-4 mt-4 overflow-y-auto flex-1 pr-2">
           <div className="space-y-2">
             <Label htmlFor="numeroProcesso">Número do Processo</Label>
             <Input

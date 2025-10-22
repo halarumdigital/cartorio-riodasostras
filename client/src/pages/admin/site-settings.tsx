@@ -15,6 +15,9 @@ interface SiteSettings {
   smtpPassword?: string;
   smtpSecure?: boolean;
   solicitacoesEmail?: string;
+  apiUrl?: string;
+  apiToken?: string;
+  apiPort?: number;
 }
 
 export default function SiteSettings() {
@@ -26,6 +29,9 @@ export default function SiteSettings() {
   const [smtpPassword, setSmtpPassword] = useState("");
   const [smtpSecure, setSmtpSecure] = useState(true);
   const [solicitacoesEmail, setSolicitacoesEmail] = useState("");
+  const [apiUrl, setApiUrl] = useState("");
+  const [apiToken, setApiToken] = useState("");
+  const [apiPort, setApiPort] = useState<number>(3000);
 
   const { data: settingsData, isLoading } = useQuery<{ settings: SiteSettings }>({
     queryKey: ["/api/site-settings"],
@@ -53,6 +59,15 @@ export default function SiteSettings() {
       }
       if (settingsData.settings.solicitacoesEmail) {
         setSolicitacoesEmail(settingsData.settings.solicitacoesEmail);
+      }
+      if (settingsData.settings.apiUrl) {
+        setApiUrl(settingsData.settings.apiUrl);
+      }
+      if (settingsData.settings.apiToken) {
+        setApiToken(settingsData.settings.apiToken);
+      }
+      if (settingsData.settings.apiPort) {
+        setApiPort(settingsData.settings.apiPort);
       }
     }
   }, [settingsData]);
@@ -187,6 +202,25 @@ export default function SiteSettings() {
       toast({
         variant: "destructive",
         title: "Erro ao salvar email de solicitações",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleSaveApiSettings = async () => {
+    try {
+      await updateSettingsMutation.mutateAsync({
+        apiUrl,
+        apiToken,
+        apiPort,
+      });
+      toast({
+        title: "Configurações da API salvas com sucesso!",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar configurações da API",
         description: error.message,
       });
     }
@@ -456,6 +490,72 @@ export default function SiteSettings() {
             >
               {updateSettingsMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
+          </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold text-brand-blue mb-4">
+            Configurações da API
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Configure as informações de conexão com a API externa.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                URL da API
+              </label>
+              <input
+                type="text"
+                value={apiUrl}
+                onChange={(e) => setApiUrl(e.target.value)}
+                placeholder="https://api.exemplo.com"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Token da API
+              </label>
+              <input
+                type="password"
+                value={apiToken}
+                onChange={(e) => setApiToken(e.target.value)}
+                placeholder="••••••••••••••••••••"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Token de autenticação para acesso seguro à API
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Porta da API
+              </label>
+              <input
+                type="number"
+                value={apiPort}
+                onChange={(e) => setApiPort(Number(e.target.value))}
+                placeholder="3000"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-gold focus:border-brand-gold"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Porta de conexão com o servidor da API (padrão: 3000)
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSaveApiSettings}
+                disabled={updateSettingsMutation.isPending}
+                className="bg-brand-blue hover:bg-opacity-90"
+              >
+                {updateSettingsMutation.isPending ? "Salvando..." : "Salvar Configurações da API"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

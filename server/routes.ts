@@ -1172,6 +1172,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Consulta processo route
+  app.post("/api/consulta-processo", async (req, res) => {
+    try {
+      const { numeroProcesso, cpf } = req.body;
+
+      if (!numeroProcesso || !cpf) {
+        return res.status(400).json({
+          message: "Número do processo e CPF são obrigatórios"
+        });
+      }
+
+      // Buscar configurações da API do banco de dados
+      const settings = await storage.getSiteSettings();
+
+      if (!settings?.apiUrl || !settings?.apiToken || !settings?.apiPort) {
+        return res.status(500).json({
+          message: "Configurações da API não encontradas. Configure em Configurações do Site."
+        });
+      }
+
+      // Montar a URL da API externa
+      const apiUrl = settings.apiUrl.replace(/\/$/, ''); // Remove barra final se houver
+      const fullUrl = `${apiUrl}:${settings.apiPort}/marcha?num_seq=${numeroProcesso}&identificacao=${cpf}`;
+
+      console.log('🔍 Consultando processo na API externa:', fullUrl);
+
+      // Fazer a requisição para a API externa
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${settings.apiToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('❌ Erro na consulta:', response.status, response.statusText);
+
+        if (response.status === 404) {
+          return res.status(404).json({
+            message: "Processo não encontrado"
+          });
+        }
+
+        return res.status(response.status).json({
+          message: "Erro ao consultar processo na API externa"
+        });
+      }
+
+      const data = await response.json();
+      console.log('✅ Processo encontrado!');
+      console.log('📋 Dados do processo:', JSON.stringify(data, null, 2));
+
+      // Se a resposta for um array, pegar o primeiro item e garantir que tem partes e andamentos
+      let processoData = Array.isArray(data) ? data[0] : data;
+
+      // Log das partes e andamentos para debug
+      if (processoData) {
+        if (processoData.partes) {
+          console.log(`👥 ${processoData.partes.length} partes encontradas`);
+        }
+        if (processoData.andamentos) {
+          console.log(`📝 ${processoData.andamentos.length} andamentos encontrados`);
+        }
+      }
+
+      res.json(data);
+    } catch (error: any) {
+      console.error('❌ Erro ao consultar processo:', error);
+      res.status(500).json({
+        message: "Erro ao consultar processo",
+        error: error.message
+      });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", requireAdmin, async (req, res) => {
     try {

@@ -23,6 +23,9 @@ export const siteSettings = mysqlTable("site_settings", {
   smtpPassword: varchar("smtp_password", { length: 255 }),
   smtpSecure: boolean("smtp_secure").default(true),
   solicitacoesEmail: varchar("solicitacoes_email", { length: 255 }),
+  apiUrl: varchar("api_url", { length: 500 }),
+  apiToken: varchar("api_token", { length: 500 }),
+  apiPort: int("api_port"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
@@ -172,6 +175,9 @@ export const insertSiteSettingsSchema = z.object({
   smtpPassword: z.string().optional().nullable(),
   smtpSecure: z.boolean().optional().nullable(),
   solicitacoesEmail: z.string().email("Email inválido").or(z.literal("")).optional().nullable(),
+  apiUrl: z.string().url("URL inválida").or(z.literal("")).optional().nullable(),
+  apiToken: z.string().optional().nullable(),
+  apiPort: z.number().optional().nullable(),
 }).partial();
 
 export const insertContactsSchema = z.object({

@@ -1,5 +1,6 @@
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
+import ConsultaProcessoSection from "@/components/consulta-processo-section";
 import AboutSection from "@/components/about-section";
 import PracticeAreas from "@/components/practice-areas";
 import Statistics from "@/components/statistics";
@@ -16,6 +17,7 @@ export default function Home() {
     <div className="bg-white font-sans text-gray-800">
       <Header />
       <HeroSection />
+      <ConsultaProcessoSection />
       <Appointment />
       <PracticeAreas />
       <Statistics />

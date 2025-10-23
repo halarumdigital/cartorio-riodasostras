@@ -160,6 +160,15 @@ export const avisos = mysqlTable("avisos", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const reviewImages = mysqlTable("review_images", {
+  id: int("id").primaryKey().autoincrement(),
+  imageUrl: varchar("image_url", { length: 500 }).notNull(),
+  order: int("order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -268,6 +277,12 @@ export const insertAvisoSchema = createInsertSchema(avisos).omit({
   updatedAt: true,
 });
 
+export const insertReviewImageSchema = createInsertSchema(reviewImages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
@@ -300,3 +315,5 @@ export type Informacao = typeof informacoes.$inferSelect;
 export type InsertInformacao = z.infer<typeof insertInformacaoSchema>;
 export type Aviso = typeof avisos.$inferSelect;
 export type InsertAviso = z.infer<typeof insertAvisoSchema>;
+export type ReviewImage = typeof reviewImages.$inferSelect;
+export type InsertReviewImage = z.infer<typeof insertReviewImageSchema>;

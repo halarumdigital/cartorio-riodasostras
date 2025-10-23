@@ -1,4 +1,4 @@
-import { type User, type InsertUser, users, type SiteSettings, type InsertSiteSettings, siteSettings, type Contacts, type InsertContacts, contacts, type Service, type InsertService, services, type Banner, type InsertBanner, banners, type GalleryItem, type InsertGalleryItem, gallery, type Solicitacao, type InsertSolicitacao, solicitacoes, type Page, type InsertPage, pages, type ContactMessage, type InsertContactMessage, contactMessages, type GoogleSettings, type InsertGoogleSettings, googleSettings, type Scripts, type InsertScripts, scripts, type SocialMedia, type InsertSocialMedia, socialMedia, type News, type InsertNews, news, type Link, type InsertLink, links, type Informacao, type InsertInformacao, informacoes, type Aviso, type InsertAviso, avisos } from "@shared/schema";
+import { type User, type InsertUser, users, type SiteSettings, type InsertSiteSettings, siteSettings, type Contacts, type InsertContacts, contacts, type Service, type InsertService, services, type Banner, type InsertBanner, banners, type GalleryItem, type InsertGalleryItem, gallery, type Solicitacao, type InsertSolicitacao, solicitacoes, type Page, type InsertPage, pages, type ContactMessage, type InsertContactMessage, contactMessages, type GoogleSettings, type InsertGoogleSettings, googleSettings, type Scripts, type InsertScripts, scripts, type SocialMedia, type InsertSocialMedia, socialMedia, type News, type InsertNews, news, type Link, type InsertLink, links, type Informacao, type InsertInformacao, informacoes, type Aviso, type InsertAviso, avisos, type ReviewImage, type InsertReviewImage, reviewImages } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, and, gte, sql } from "drizzle-orm";
 
@@ -538,6 +538,41 @@ export class DbStorage implements IStorage {
 
   async deleteAviso(id: number): Promise<boolean> {
     const result = await db.delete(avisos).where(eq(avisos.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  // Review Images methods
+  async getAllReviewImages(): Promise<ReviewImage[]> {
+    return db.select().from(reviewImages).orderBy(reviewImages.order, desc(reviewImages.createdAt));
+  }
+
+  async getReviewImage(id: number): Promise<ReviewImage | undefined> {
+    const result = await db.select().from(reviewImages).where(eq(reviewImages.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createReviewImage(reviewImage: InsertReviewImage): Promise<ReviewImage> {
+    const [newReviewImage] = await db.insert(reviewImages).values(reviewImage);
+    if (!newReviewImage.insertId) {
+      throw new Error("Failed to create review image");
+    }
+    const result = await db.select().from(reviewImages).where(eq(reviewImages.id, newReviewImage.insertId));
+    if (!result[0]) {
+      throw new Error("Failed to retrieve created review image");
+    }
+    return result[0];
+  }
+
+  async updateReviewImage(id: number, reviewImage: Partial<InsertReviewImage>): Promise<ReviewImage | undefined> {
+    await db.update(reviewImages).set({
+      ...reviewImage,
+      updatedAt: new Date(),
+    }).where(eq(reviewImages.id, id));
+    return this.getReviewImage(id);
+  }
+
+  async deleteReviewImage(id: number): Promise<boolean> {
+    const result = await db.delete(reviewImages).where(eq(reviewImages.id, id));
     return result[0].affectedRows > 0;
   }
 

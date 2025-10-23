@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import passport from "./auth";
 import bcrypt from "bcryptjs";
-import { insertUserSchema, type User, insertSiteSettingsSchema, insertContactsSchema, insertServiceSchema, type Service, insertBannerSchema, type Banner, insertGallerySchema, type GalleryItem, insertPageSchema, type Page, insertContactMessageSchema, type ContactMessage, insertGoogleSettingsSchema, insertScriptsSchema, insertSocialMediaSchema, insertNewsSchema, type News, insertLinkSchema, type Link, insertInformacaoSchema, type Informacao, insertAvisoSchema, type Aviso } from "@shared/schema";
+import { insertUserSchema, type User, insertSiteSettingsSchema, insertContactsSchema, insertServiceSchema, type Service, insertBannerSchema, type Banner, insertGallerySchema, type GalleryItem, insertPageSchema, type Page, insertContactMessageSchema, type ContactMessage, insertGoogleSettingsSchema, insertScriptsSchema, insertSocialMediaSchema, insertNewsSchema, type News, insertLinkSchema, type Link, insertInformacaoSchema, type Informacao, insertAvisoSchema, type Aviso, insertReviewImageSchema, type ReviewImage } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -1609,6 +1609,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Aviso deletado com sucesso" });
     } catch (error) {
       res.status(500).json({ message: "Erro ao deletar aviso" });
+    }
+  });
+
+  // Review Images routes
+  app.get("/api/review-images", async (req, res) => {
+    try {
+      const reviewImages = await storage.getAllReviewImages();
+      res.json({ reviewImages });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar imagens" });
+    }
+  });
+
+  app.post("/api/upload/review-image", requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+      }
+
+      const filePath = `/uploads/${req.file.filename}`;
+      res.json({ filePath });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: error.message || "Erro ao fazer upload" });
+    }
+  });
+
+  app.post("/api/review-images", requireAdmin, async (req, res) => {
+    try {
+      const reviewImageData = insertReviewImageSchema.parse(req.body);
+      const newReviewImage = await storage.createReviewImage(reviewImageData);
+      res.status(201).json({ reviewImage: newReviewImage });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao criar imagem" });
+    }
+  });
+
+  app.put("/api/review-images/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const reviewImageData = insertReviewImageSchema.partial().parse(req.body);
+      const updatedReviewImage = await storage.updateReviewImage(id, reviewImageData);
+
+      if (!updatedReviewImage) {
+        return res.status(404).json({ message: "Imagem não encontrada" });
+      }
+
+      res.json({ reviewImage: updatedReviewImage });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erro ao atualizar imagem" });
+    }
+  });
+
+  app.delete("/api/review-images/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteReviewImage(id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Imagem não encontrada" });
+      }
+
+      res.json({ message: "Imagem deletada com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao deletar imagem" });
     }
   });
 

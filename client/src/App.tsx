@@ -16,6 +16,8 @@ import SoliciteEscritura from "@/pages/solicite-escritura";
 import Contato from "@/pages/contato";
 import LinksPage from "@/pages/links";
 import InformacoesPage from "@/pages/informacoes";
+import ServicosOnlinePage from "@/pages/servicos-online";
+import ServicosPage from "@/pages/servicos";
 import DynamicPage from "@/pages/dynamic-page";
 import WhatsAppButton from "@/components/whatsapp-button";
 import { useEffect } from "react";
@@ -35,6 +37,8 @@ function Router() {
       <Route path="/contato" component={Contato} />
       <Route path="/links" component={LinksPage} />
       <Route path="/informacoes" component={InformacoesPage} />
+      <Route path="/servicos-online" component={ServicosOnlinePage} />
+      <Route path="/servicos" component={ServicosPage} />
       <Route path="/certidao-de-escritura" component={CertidaoEscritura} />
       <Route path="/certidao-de-protesto" component={CertidaoProtesto} />
       <Route path="/certidao-de-procuracao" component={CertidaoProcuracao} />

@@ -107,16 +107,16 @@ export default function Header() {
       {/* Main navigation */}
       <div className="container mx-auto max-lg:px-1 px-6 py-4 max-lg:flex max-lg:justify-between max-lg:items-center">
         <div className="flex justify-between items-center lg:hidden max-lg:w-full">
-          <a href="/" className="flex items-center max-lg:ml-3" data-testid="link-logo">
+          <a href="/" className="flex items-center justify-center flex-1" data-testid="link-logo">
             {mainLogo ? (
               <img
                 src={mainLogo}
                 alt={siteName}
-                className="object-contain lg:hidden"
+                className="object-contain lg:hidden mx-auto"
                 style={{ height: '120px', width: 'auto' }}
               />
             ) : (
-              <div className="max-lg:block max-lg:ml-2 max-lg:text-left hidden">
+              <div className="max-lg:block max-lg:text-center hidden">
                 <h1 className="font-serif text-lg font-bold text-brand-blue leading-tight">{siteName}</h1>
                 <p className="text-xs text-gray-500 tracking-widest">NOTAS | PROTESTO | RCPN</p>
                 <p className="text-xs text-gray-500">Rio das Ostras/RJ</p>
@@ -124,7 +124,7 @@ export default function Header() {
             )}
           </a>
           <button
-            className="text-brand-blue lg:hidden max-lg:focus:outline-none max-lg:mr-2"
+            className="text-brand-blue lg:hidden max-lg:focus:outline-none max-lg:mr-2 absolute right-0"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             data-testid="button-mobile-menu"
           >
@@ -132,26 +132,26 @@ export default function Header() {
           </button>
         </div>
 
-        <div className="hidden lg:flex flex-col items-center">
-          <a href="/" className="flex items-center justify-center mb-4" data-testid="link-logo">
+        <div className="hidden lg:flex flex-col items-center w-full">
+          <a href="/" className="flex items-center justify-center mb-4 w-full" data-testid="link-logo">
             {mainLogo ? (
               <img
                 src={mainLogo}
                 alt={siteName}
                 style={{ height: '150px', width: 'auto' }}
-                className="object-contain"
+                className="object-contain mx-auto"
               />
             ) : (
-              <span className="font-serif text-3xl font-bold text-brand-blue">{siteName}</span>
+              <span className="font-serif text-3xl font-bold text-brand-blue mx-auto">{siteName}</span>
             )}
           </a>
 
-          <nav className="hidden lg:flex items-center space-x-8 max-lg:text-sm max-lg:font-bold max-lg:text-gray-600" style={{ lineHeight: '60px' }}>
-            <a href="#home" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-home">Home</a>
-            <a href="#servicos" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-servicos">Serviços</a>
-            <a href="#services-online" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-services-online">Serviços Online</a>
+          <nav className="hidden lg:flex items-center justify-center space-x-8 max-lg:text-sm max-lg:font-bold max-lg:text-gray-600 w-full" style={{ lineHeight: '60px' }}>
+            <a href="/" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-home">Home</a>
+            <a href="/servicos" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-servicos">Serviços</a>
+            <a href="/servicos-online" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-services-online">Serviços Online</a>
             <a href="/informacoes" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-informacoes">Informações</a>
-            <a href="#links" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-links">Links</a>
+            <a href="/links" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-links">Links</a>
             <a href="/contato" className="nav-link text-brand-blue uppercase max-lg:hover:text-brand-blue" data-testid="link-contact">Contato</a>
           </nav>
         </div>
@@ -161,11 +161,11 @@ export default function Header() {
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t">
           <nav className="container mx-auto px-6 max-lg:py-0 py-4">
-            <a href="#home" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-home">Home</a>
-            <a href="#servicos" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-servicos">Serviços</a>
-            <a href="#services-online" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-services-online">Serviços Online</a>
+            <a href="/" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-home">Home</a>
+            <a href="/servicos" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-servicos">Serviços</a>
+            <a href="/servicos-online" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-services-online">Serviços Online</a>
             <a href="/informacoes" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-informacoes">Informações</a>
-            <a href="#links" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-links">Links</a>
+            <a href="/links" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-links">Links</a>
             <a href="/contato" className="block max-lg:text-center max-lg:py-2 max-lg:px-4 max-lg:text-sm max-lg:text-gray-700 max-lg:hover:bg-gray-100 nav-link text-brand-blue uppercase" data-testid="mobile-link-contact">Contato</a>
           </nav>
         </div>

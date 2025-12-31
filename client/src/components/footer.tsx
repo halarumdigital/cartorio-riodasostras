@@ -168,7 +168,11 @@ export default function Footer() {
             <div className="text-gray-400">
               Feito pela <a href="https://halarum.dev" target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:text-white transition-colors">Halarum.dev</a>
             </div>
-            <a href="/politica-de-privacidade" className="hover:text-brand-gold transition-colors" data-testid="link-footer-privacy">Política de Privacidade</a>
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+              <a href="/politica-de-privacidade" className="hover:text-brand-gold transition-colors" data-testid="link-footer-privacy">Política de Privacidade</a>
+              <span className="hidden md:inline text-gray-500">|</span>
+              <span className="text-gray-400">Cartório 1° Ofício de Rio das Ostras - CNPJ 56.886.764/0001-80</span>
+            </div>
           </div>
         </div>
       </div>

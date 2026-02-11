@@ -1536,6 +1536,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload aviso image
+  app.post("/api/upload/aviso", requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+      }
+      const filePath = `/uploads/${req.file.filename}`;
+      res.json({ filePath });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao fazer upload da imagem" });
+    }
+  });
+
   // Avisos routes
   app.get("/api/avisos", async (req, res) => {
     try {

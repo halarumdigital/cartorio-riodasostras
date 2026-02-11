@@ -28,10 +28,7 @@
       "Bash(dir:*)",
       "Bash(del migrationsrun-add-smtp-fields.mjs)",
       "Bash(del:*)",
-      "Bash(npx tsx:*)",
-      "Bash(wc:*)",
-      "Bash(export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\")",
-      "Bash(source:*)"
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []

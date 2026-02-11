@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 interface Aviso {
   id: number;
   texto: string;
+  imagemUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,13 +88,24 @@ export default function AvisosPopup() {
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(80vh-180px)]">
-            <div className="prose prose-lg max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {currentAviso.texto}
-              </p>
-            </div>
-            <div className="mt-4 text-sm text-gray-500">
+          <div className="overflow-y-auto max-h-[calc(80vh-180px)]">
+            {currentAviso.imagemUrl && (
+              <div>
+                <img
+                  src={currentAviso.imagemUrl}
+                  alt="Imagem do aviso"
+                  className="w-full object-contain"
+                />
+              </div>
+            )}
+            {currentAviso.texto && (
+              <div className="px-6 pt-4 prose prose-lg max-w-none">
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {currentAviso.texto}
+                </p>
+              </div>
+            )}
+            <div className="px-6 py-4 text-sm text-gray-500">
               Publicado em {new Date(currentAviso.createdAt).toLocaleDateString("pt-BR")}
             </div>
           </div>

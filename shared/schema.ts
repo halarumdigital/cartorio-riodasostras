@@ -155,7 +155,8 @@ export const informacoes = mysqlTable("informacoes", {
 
 export const avisos = mysqlTable("avisos", {
   id: int("id").primaryKey().autoincrement(),
-  texto: text("texto").notNull(),
+  texto: text("texto"),
+  imagemUrl: varchar("imagem_url", { length: 500 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
